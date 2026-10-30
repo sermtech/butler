@@ -121,6 +121,12 @@ Installing with an AI agent? Point it at [`INSTALL.md`](INSTALL.md).
   on a Windows desktop, a Windows laptop and a Mac mini. Expect rough edges.
 - **Coding agents run with full permissions** in the folders you give them.
   Read [Security model and its limits](#security-model-and-its-limits) first.
+- **Using it from your phone? Use Tailscale, or another private network.**
+  Tailscale is the built-in path: no pairing, your Tailscale login proves it
+  is you. Any other private network (WireGuard, ZeroTier) works the
+  local-network way: turn on "Open on the local network" and pair each
+  device once. Never port-forward Butler or expose it to the internet. See
+  [Phones and other devices](#phones-and-other-devices).
 - **Not** telephony, **not** multi-user, **not** a cloud service. One owner.
 - **The code is Apache-2.0; the wake-word models are non-commercial.** See
   [License](#license).
