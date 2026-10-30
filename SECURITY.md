@@ -17,6 +17,9 @@ them.
 
 ## Known dependency advisories
 
+Python: `pip-audit -r requirements.txt` reports no known vulnerabilities
+(2026-10-30).
+
 `npm audit` reports these, and none has an upstream fix as of 2026-10-29.
 All of them sit in the local text-to-speech stack (`kokoro-js` and what it
 pulls in) and handle model and image files Butler downloads itself, not

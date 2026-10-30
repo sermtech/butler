@@ -13,6 +13,7 @@
   <a href="LICENSE">Apache-2.0</a> &middot;
   <a href="INSTALL.md">Install</a> &middot;
   <a href="SECURITY.md">Security</a> &middot;
+  <a href="CONTRIBUTING.md">Contributing</a> &middot;
   <a href="HISTORY.md">History</a>
 </p>
 
@@ -55,7 +56,7 @@ WhatsApp. I wanted a mobile interface. I wanted it simple, highly functional
 and flexible. I wanted to speak to it in real time, with everything running
 locally, at potentially zero cost, built on state-of-the-art components.
 
-That's why. If you share the vision, join in.
+That's why. If you share the vision, [join in](CONTRIBUTING.md).
 
 ## What it does
 

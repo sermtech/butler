@@ -1,6 +1,6 @@
 # Butler history
 
-This repository was squashed for publication. The private development history had 429 commits, from 2026-08-16 to 2026-10-30, adding 319566 lines and removing 47295 (sum of per-commit insertions and deletions). Roughly 378 distinct acceptance criteria (AC-n identifiers) appear in plan.md. The dates and subjects below are the only part of that history kept; author names and emails are not included.
+This repository was squashed for publication. The private development history had 430 commits, from 2026-08-16 to 2026-10-30, adding 319598 lines and removing 47296 (sum of per-commit insertions and deletions). Roughly 378 distinct acceptance criteria (AC-n identifiers) appear in plan.md. The dates and subjects below are the only part of that history kept; author names and emails are not included.
 
 ## Commits (oldest first)
 
@@ -433,3 +433,4 @@ This repository was squashed for publication. The private development history ha
 - 2026-10-30  docs(readme): a Why? section in the owner's words
 - 2026-10-30  docs(backlog): the public push uses the gh login
 - 2026-10-30  docs(readme): phones go through Tailscale or another private network, never port-forwarding
+- 2026-10-30  docs: CONTRIBUTING (join in leads to Discussions); pip-audit clean in SECURITY
