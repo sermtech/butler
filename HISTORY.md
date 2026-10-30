@@ -1,0 +1,431 @@
+# Butler history
+
+This repository was squashed for publication. The private development history had 425 commits, from 2026-08-16 to 2026-10-30, adding 319532 lines and removing 47276 (sum of per-commit insertions and deletions). Roughly 378 distinct acceptance criteria (AC-n identifiers) appear in plan.md. The dates and subjects below are the only part of that history kept; author names and emails are not included.
+
+## Commits (oldest first)
+
+- 2026-08-16  scaffold(butler): fork the unified-stt voice loop into a standalone project
+- 2026-08-16  fix(web): convert pcm.ts to plain JS -- the web dir has no build step
+- 2026-08-16  plan(butler): the build plan -- story, 26 criteria, Gherkin, 5 phases
+- 2026-08-16  plan(butler): fold review findings, four ports, and measured numbers
+- 2026-08-16  bench(butler): measure the two unknowns gating AC-4
+- 2026-08-16  mock(web): interactive UI mock for the satellite page
+- 2026-08-16  test(butler): pytest harness spine
+- 2026-08-16  test(butler): speech fixtures, generated and verified
+- 2026-08-16  feat(daemon): the four ports, their fakes, and conformance suites
+- 2026-08-16  feat(daemon): protocol v1 daemon on the ports -- 24 tests green
+- 2026-08-16  feat(daemon): first-segment cap, real engine adapters, honest tests
+- 2026-08-16  plan(butler): record the abort limitation measured in the kokoro adapter
+- 2026-08-16  feat(web): satellite page speaks protocol v1; fix 403 on the page itself
+- 2026-08-16  fix(daemon): three real defects found by researching prior art
+- 2026-08-16  fix(daemon): the abort was fake, and the energy gate could go deaf
+- 2026-08-16  feat(daemon): record what was spoken, not what was generated
+- 2026-08-16  docs(references): prior-art review of six comparable systems
+- 2026-08-16  feat(daemon): tier-1 recommendations R2, R4, R5 from the prior-art review
+- 2026-08-16  feat(daemon,web): a turn ends when the speaker goes quiet, not when we stop sending
+- 2026-08-16  plan(butler): bring the plan level with tier-1 and the review
+- 2026-08-16  refactor: deduplicate the hub test harness, name the turn guard
+- 2026-08-16  fix(daemon): stop blocking the event loop, warm the recognizer at boot
+- 2026-08-16  feat(daemon): three turn-ending modes, a closing warning, and server-side settings
+- 2026-08-16  feat(web): three earcons that do not poison the microphone
+- 2026-08-16  feat(daemon): wire smart-turn, anchored at speech onset
+- 2026-08-17  fix(daemon): line-buffer stdout so the daemon's own log is visible
+- 2026-08-17  feat(daemon): schema-driven settings, every knob reachable over HTTP
+- 2026-08-17  feat(web): settings panel, rendered from the daemon's schema
+- 2026-08-17  fix(daemon): tell the browser to revalidate; add a real browser probe
+- 2026-08-17  docs: install the DOX rail -- AGENTS.md hierarchy with CLAUDE.md as pointer
+- 2026-08-17  plan(butler): sync the plan with the code, and fix the long-form ceiling
+- 2026-08-17  feat(tts): stream the sidecar per sentence, and give abort a route to it
+- 2026-08-17  feat(web): the satellite page, rebuilt to the design comp
+- 2026-08-17  plan(butler): respecify the brain -- one router, two modes
+- 2026-08-17  fix(tts): never write to a dead response; simplify what the rewrite left behind
+- 2026-08-17  feat(daemon): ask the target what models it serves (step 6, first half)
+- 2026-08-17  feat(web): model pickers that read the endpoint, with favourites
+- 2026-08-17  plan(butler): keep-warm as a switch, a joined model picker, harness persistence
+- 2026-08-17  docs: handoff.md -- where this session stopped, and why
+- 2026-08-17  plan(butler): connections replace the one endpoint, and the owner picks
+- 2026-08-17  spec(arch): the seams, the token caps, and a harness contract (AC-38..AC-44)
+- 2026-08-17  plan(arch): Harness becomes the fifth port, and seams land before connections
+- 2026-08-17  spec(arch): record the voice="" gap on the wire, found in review
+- 2026-08-17  feat(ports): every engine warms and identifies itself (AC-42, phase 1)
+- 2026-08-17  fix(asr): info must not be the thing that loads the model (D-25)
+- 2026-08-17  feat(ports): barge-in reaches the brain, and names the turn (AC-43, phase 2)
+- 2026-08-17  test(brain): make two AC-43 tests able to fail
+- 2026-08-17  feat(tts): the engine names its own voices (AC-41 voice half, phase 3)
+- 2026-08-17  fix: pin info["voice"], and three smaller review findings
+- 2026-08-17  feat(asr): the contract stops explaining one engine (AC-41 met, phase 4)
+- 2026-08-17  fix: make three tests and two docs carry their own premises
+- 2026-08-17  feat(settings): one group per seam, in the order sound travels (AC-45)
+- 2026-08-17  fix: act on a verification and a simplification pass over the session
+- 2026-08-17  feat(connections): a place to ask, and a pointer to the key (phase 5, part 1)
+- 2026-08-17  fix(connections): actually send the key, and refuse a malformed auth
+- 2026-08-17  feat(connections): model settings become {conn, model} pairs (AC-30 met)
+- 2026-08-17  fix: five review findings on the pair migration, one of them serious
+- 2026-08-17  feat(connections): the panel, and phase 5 is done (AC-37 met)
+- 2026-08-17  feat(connections): the Test button plan.md promised, and a doc that matches
+- 2026-08-17  docs: handoff.md -- where this session stopped, and why
+- 2026-08-17  feat(brain): the router, endpoint mode, and the token caps (AC-38/39/40)
+- 2026-08-17  feat(brain): a live probe, and the boot check it caught
+- 2026-08-17  test(conversation): four turns, not one, and a browser that proves it
+- 2026-08-17  docs: the rail catches up with the brain that now exists
+- 2026-08-17  docs(handoff): the Kokoro sidecar orphans, found while cleaning up
+- 2026-08-17  docs(spec): phase 7, and the six measurements it rests on
+- 2026-08-17  docs(plan): phase 7 step by step, and four corrections to its own spec
+- 2026-08-17  feat(ports): the fifth seam, its fake, and the suite that pins it (7.1)
+- 2026-08-17  fix: seven review findings on the harness port, the worst a suite that hangs
+- 2026-08-17  feat(harness): pi behind the port, and the three things a fake cannot do
+- 2026-08-17  fix(harness): five review findings on the pi adapter, and a startup number that was wrong
+- 2026-08-17  feat(lifetime): one job object, and neither child outlives a hard kill (AC-36)
+- 2026-08-18  feat(harness): a brain that talks to a coding agent, and the settings that spawn it
+- 2026-08-18  fix(harness): five review findings, and the flaky one was the instrument
+- 2026-08-18  feat(harness): the spoken write grant, and the two ways it is taken back (AC-29)
+- 2026-08-18  fix(grant): a barge-in mid-question turned the interruption into consent
+- 2026-08-18  feat(sessions): the conversation survives a restart, and the grant does not (AC-35)
+- 2026-08-18  feat(harness): "work in project X", exact or refused out loud (AC-31)
+- 2026-08-18  fix(grant): a yes was consent for whichever repository the settings named LAST
+- 2026-08-18  docs: phase 7 closeout, and two criteria that are honestly only half met
+- 2026-08-18  docs(harness): section 10 -- the simplification proposal for four owner rulings
+- 2026-08-18  docs(handoff): the next session deletes, and here is what may not go with it
+- 2026-08-18  feat(harness): delete the spoken write grant -- AC-29 is retired
+- 2026-08-18  fix(review): the prose that outlived the grant, and the test the plan invented
+- 2026-08-18  feat(harness): a child per message, and one line to cover the silence it buys
+- 2026-08-18  fix(review): three of the four breaks never disposed the child
+- 2026-08-18  feat(chats): one flat JSON file per conversation -- AC-35 rewritten
+- 2026-08-18  fix(review): the re-attach test survived the defect it is named after
+- 2026-08-18  docs: the sweep, and the documents that outlived their code
+- 2026-08-18  docs(worker): the phase 2 spec, and the spike that found Gmail in a worker
+- 2026-08-18  feat(settings): the pipeline is data now, not a digit in front of a label
+- 2026-08-18  feat(settings): a chain the daemon draws, because the page may not name a seam
+- 2026-08-18  feat(settings): one section at a time, and the chain says which
+- 2026-08-18  feat(settings): as wide as six boxes measure, and no connector into nothing
+- 2026-08-18  docs(plan): AC-55..AC-58, so web/AGENTS.md cites something that exists
+- 2026-08-18  feat(brain): per-role reasoning control, so a thinking model can answer
+- 2026-08-18  fix(settings): a pair default is not "[object Object]", and reasoning is not buried
+- 2026-08-18  fix(config): a real config/models.json no longer breaks the test suite
+- 2026-08-18  feat(tls): serve https/wss by default, so a phone can use Butler over the LAN
+- 2026-08-18  feat(harness): a blank working directory defaults to TMP, not a refusal (AC-31)
+- 2026-08-18  feat(harness): a persistent harness_tools setting -- read_only or full (AC-29 note)
+- 2026-08-18  feat(restart): POST /api/restart re-execs the daemon so restart-flagged settings apply
+- 2026-08-18  feat(web): a hand-built "restart daemon" button in the settings header
+- 2026-08-18  docs(handoff): a session that made Butler real -- TLS, reasoning, restart, harness
+- 2026-08-18  feat(harness): hold one coding-agent child per conversation (AC-59..AC-63)
+- 2026-08-18  docs(dox): daemon/AGENTS.md was missed in the AC-59 DOX pass
+- 2026-08-18  feat(brain): give every turn the conversation, and the router most of all (AC-64, AC-65)
+- 2026-08-18  feat(brain): three brain modes on one labelled control (AC-66, AC-67)
+- 2026-08-18  docs(handoff): a session that reversed a ruling and found the second cause
+- 2026-08-18  docs(references): ambient mode reviewed -- it is three features, not one
+- 2026-08-18  docs(earshot): spec the mode, and record the measurement that broke its first design
+- 2026-08-18  docs(defect): D-26 -- a turn longer than the recognizer can finalize returns silence
+- 2026-08-18  fix(asr): D-26 -- a long turn no longer completes having heard nothing
+- 2026-08-19  fix(probe): probe_page could not reach a TLS daemon, which is every daemon now
+- 2026-08-19  docs(handoff): the slow tier ran, and AC-59's number is real
+- 2026-08-19  docs(handoff): finish the pass -- a half-updated snapshot is worse than a stale one
+- 2026-08-19  docs(dox): session closeout -- the three gaps a real pass found
+- 2026-08-19  docs(mocks): four design references -- three main-app alternatives and one settings page
+- 2026-08-19  docs(mocks): the URL is /mocks/index.html -- a directory URL is 403 by design
+- 2026-08-19  docs(mocks): D -- the shipped page with a ribbon wave and a field behind it
+- 2026-08-19  docs(mocks): E -- the band deleted, the wave made of particles
+- 2026-08-19  docs(mocks): F -- the wave IS the spectrum, and the band stays the size it is
+- 2026-08-19  feat(mocks): E's shape is measured now, not asserted
+- 2026-08-19  feat(mocks): D and F measure their audio too, so the set is comparable
+- 2026-08-19  feat(mocks): G and H -- two fusions of ribbon and swarm, on measured audio
+- 2026-08-19  docs(mocks): I -- a wave at the core, a cloud at the edges; and the DOX pass
+- 2026-08-19  feat(mocks): three variations on Weave -- palette, volume mapping, particles
+- 2026-08-19  feat(mocks): G3 flow, the tilt that unpiles every field, and the DOX pass
+- 2026-08-19  docs(spec): the lattice wave -- cold room, gold Butler, and three lies to stop telling
+- 2026-08-19  feat(web): phase 1 -- the ramp is a temperature arc (AC-76)
+- 2026-08-19  feat(web): phase 2 -- the wave, rewritten (AC-74, AC-77..AC-79, AC-82)
+- 2026-08-19  feat(web): phase 3 -- the lattice (AC-74, AC-75, AC-80)
+- 2026-08-19  test(web): phase 4 -- the grep gate, and the three queries proved on the canvas
+- 2026-08-19  docs(dox): the wave is shipped, so the rail's account of it is rewritten
+- 2026-08-19  docs(spec): the one-page settings surface, and the three criteria it retires
+- 2026-08-19  feat(settings): a group says what it does, and the daemon is what says it
+- 2026-08-19  feat(web): settings are one full-screen surface on one scroll (AC-83..AC-90)
+- 2026-08-19  docs(dox): two rules a subagent bought the hard way today
+- 2026-08-19  docs(handoff): rewritten for a session that changed what the page looks like
+- 2026-08-19  docs(spec): what the satellite has to gain, found by driving it (AC-91..AC-106)
+- 2026-08-19  docs(spec): a verification pass, and the one count it caught wrong
+- 2026-08-19  feat(web): eleven of the sixteen, and the page stops saying what is untrue
+- 2026-08-19  fix(web): revert AC-92 -- the raised watchdog made the wake word deaf
+- 2026-08-19  docs(spec): speed, the other voices, mute, and a stop control (AC-107..AC-112)
+- 2026-08-19  feat(tts): the engine's voices, a speaking speed, and a way to stay quiet
+- 2026-08-19  feat(voice): a stop control, and a voice you can hear before you pick it
+- 2026-08-19  docs(ambient): the listening-buffer feature is called AMBIENT (owner, 2026-08-19)
+- 2026-08-19  docs(research): 2026 wake-word and ambient options, and one measurement that inverts the ambient spec
+- 2026-08-19  docs(handoff): the session that made the page honest and the TTS seam controllable
+- 2026-08-19  docs(ambient): two shapes collapse into one, and AC-1a survives
+- 2026-08-19  feat: five of six -- the contract catches up, and three real defects close
+- 2026-08-19  measure(ambient): the concurrency the design assumed CORRUPTS both transcripts
+- 2026-08-19  feat(ambient): the room reaches the brain, queued and labelled (AC-68..AC-70, AC-72)
+- 2026-08-19  docs(handoff): ambient ships, and the contract caught up
+- 2026-08-19  docs(handoff): correct the header the last commit missed
+- 2026-08-19  docs(dox): web/AGENTS.md never recorded the stop control, and still cited a stub that came true
+- 2026-08-20  docs(dox): the audit that was already in the tree when this session began
+- 2026-08-20  fix(endword): the end phrase was detected and never stripped (D-33)
+- 2026-08-21  fix(page): the wave covers the width, and a connection row stops shoving the panel sideways
+- 2026-09-09  docs(research): what Handy and pipecat already paid for
+- 2026-09-09  feat(dictate): a clip in, its text out, and never beside another decode
+- 2026-09-09  feat(desk): a process the daemon owns, and that dies with it (AC-121, AC-122)
+- 2026-09-09  feat(dictate): what is pasted cannot execute a command (AC-123), and the ceiling is measured rather than extrapolated
+- 2026-09-09  feat(desk): the hook, the ring, and the paste (step 3, AC-113)
+- 2026-09-09  test(desk): step 3 proved end to end, and one real harm the probe caused
+- 2026-09-09  fix(desk): the agent read a settings key the route has never served
+- 2026-09-09  docs(spec): step 3 is proved -- the owner held the key and spoke (AC-113)
+- 2026-09-09  fix(brain): a harness that goes SILENT no longer holds the turn forever (D-34)
+- 2026-09-09  docs(handoff): the session that gave Butler a feature the owner uses daily
+- 2026-09-09  feat(desk): Ctrl + numpad * opens a pi terminal that outlives the daemon
+- 2026-09-09  fix(desk): delete the tkinter picker; the terminal directory is a setting
+- 2026-09-09  docs(handoff): step 4 built, and the picker the owner overruled after one commit
+- 2026-09-09  fix(desk): the terminal opens through wt.exe, so pi actually starts (AC-118)
+- 2026-09-09  docs(spec): desk-audio, why dictation goes deaf and what Handy does instead
+- 2026-09-09  fix(desk): a microphone that goes deaf is detected and reopened (AC-126..AC-128)
+- 2026-09-09  docs: the deaf-microphone playbook, and a handoff with three reversals in it
+- 2026-09-09  feat(shortcuts): one binding table, a pane on the main page (AC-133..AC-145)
+- 2026-09-09  fix(desk): a suppressed key cannot be polled, so AC-145 is a TIMEOUT
+- 2026-09-09  feat(shortcuts): a click opens the agent, chords behind a disclosure (AC-146..AC-151)
+- 2026-09-09  docs(handoff): the shortcuts pane, and the regression that taught a Win32 rule
+- 2026-09-09  spike(desk): can Butler take the keyboard's mail button? Two unmeasured questions
+- 2026-09-09  spike(desk): the mail button is NOT a keystroke here -- NO-GO, and the control that proved it
+- 2026-09-09  feat(scripts): bind the keyboard's mail button to Butler through Windows' AppKey
+- 2026-09-09  fix(web): an explicit `edit` button, because the invisible one was not a control
+- 2026-09-10  feat(daemon): one language setting, wired -- because the whole Recognition group was decoration (AC-152, D-36)
+- 2026-09-10  feat(tts): Butler speaks Brazilian Portuguese -- Kokoro had the voices all along (AC-154..AC-160)
+- 2026-09-10  feat(daemon): the Recognition settings reach the recognizer -- D-36 closed (AC-152)
+- 2026-09-10  docs(dox): de-stale the root index after D-36 closed
+- 2026-09-10  fix(daemon): a stale config key must not stop the daemon booting (D-1)
+- 2026-09-10  fix(scripts): start.bat takes the port back instead of refusing, and taskkill stops flashing a console
+- 2026-09-10  docs(handoff): the language session, and the rule that a dead control is not a small change
+- 2026-09-10  docs(ui): spec and mock for a page a new user already knows how to use (AC-161..AC-172)
+- 2026-09-10  fix(repo): untrack .shots -- 2.4 MB of agent scratch swept in by git add -A
+- 2026-09-10  docs(ui): the implementation plan, and six typefaces to choose from (AC-173)
+- 2026-09-10  feat(mocks): the type is 8% larger, and the amount is dialable (familiar-ui 6.7)
+- 2026-09-10  docs(ui): three owner rulings -- the face is a setting, typed turns obey speak, typing cancels a capture (R5-R7)
+- 2026-09-10  docs(ui): three colour schemes, and the one thing they may not touch (AC-174)
+- 2026-09-10  feat(daemon): steps 1 and 2 -- past conversations are reachable, and typing is a turn (AC-162..AC-164)
+- 2026-09-10  feat(web): the conversation is the page (AC-161, AC-165..AC-171, AC-173, AC-174)
+- 2026-09-10  test(probes): the acceptance instruments prove again what they proved (AC-172)
+- 2026-09-10  feat: the mic ring, correction without rewriting history, and a protocol doc that checks itself (AC-97)
+- 2026-09-10  fix(web): the browser was never told which way the page is lit
+- 2026-09-10  refactor(web): the diagnostics fold moves into the sidebar (AC-161)
+- 2026-09-10  fix(web): the page said one thing five times; now it says it once (AC-168)
+- 2026-09-10  feat(daemon): a conversation can be thrown away (DELETE /api/chats/{id})
+- 2026-09-10  feat(web): a conversation can be deleted from the sidebar
+- 2026-09-10  feat(daemon): a voice trace, because the turn path had no logging at all
+- 2026-09-10  fix(tts): one `=` cost every accent in Portuguese (D-37)
+- 2026-09-10  fix(tts): collapse espeak's tied pairs to the symbols Kokoro was trained on
+- 2026-09-10  feat(web): the transcript reads like a formatted answer, not a blob
+- 2026-09-10  fix(tts): the second half of a broken word was deleted, not spoken (D-38)
+- 2026-09-10  feat(daemon): a reply can be read aloud again on demand (AC-183)
+- 2026-09-10  fix(web): the socket is the page's, not the microphone's (AC-175..AC-178)
+- 2026-09-10  feat(web): four controls, and listening becomes a setting (AC-179..AC-184)
+- 2026-09-10  feat(chats): a search bar over past conversations (AC-185..AC-188)
+- 2026-09-10  feat(chats): go back to an earlier point in a conversation (AC-189..AC-196)
+- 2026-09-11  feat(attach): show Butler a file, a photo or a document (AC-197..AC-206)
+- 2026-09-11  fix(harness): "Working on it." is a status, so stop recording it as an answer
+- 2026-09-11  feat(language): Butler picks the voice to match what is spoken (AC-207..AC-215)
+- 2026-09-11  test(e2e): user-story scenarios in a real browser against a real daemon
+- 2026-09-11  fix(web): a draft outranks the stop, Escape clears the box, 44px touch targets
+- 2026-09-11  fix(hub): a stopped turn can no longer re-arm the turn that replaced it (D-39)
+- 2026-09-11  fix(harness): everything the room hears reaches the record (backlog item 3)
+- 2026-09-11  feat(look): two quieter colour schemes, and an appearance pill on the main page
+- 2026-09-11  docs(handoff): rewrite the snapshot for 2026-09-11
+- 2026-09-11  feat(pickers): what is answering, under the chat input (backlog item 5)
+- 2026-09-11  feat(workspaces): one project table, and a chat belongs to a project (item 4)
+- 2026-09-11  docs(handoff): rewrite the snapshot for the pickers and workspaces session
+- 2026-09-11  fix(pickers): the model chooser goes UNDER the composer, and gets quiet
+- 2026-09-11  fix(composer): the text field had no width on a small phone
+- 2026-09-11  docs(backlog): four more items from the owner, recorded not started
+- 2026-09-11  fix(review): fourteen defects two review agents found in today's work
+- 2026-09-11  fix(rewind): the agent keeps the turns you took back (owner's report)
+- 2026-09-11  feat(sidebar): a width the owner can drag, and the daemon keeps it
+- 2026-09-11  fix(stop): the glyph was OUTLINED, which is why it read as a square in a square
+- 2026-09-11  fix(sidebar): collapsing stopped narrowing it, and the spec index was stale
+- 2026-09-11  mock(k): three sidebars for projects and chat history
+- 2026-09-11  mock(k): a fourth option, from what Cowork and Codex actually do
+- 2026-09-11  mock(n): triage, and side by side, for ten parallel agents
+- 2026-09-11  mock(l,m): four more sidebars for ten parallel agents
+- 2026-09-11  docs(workspaces): what ten parallel agents actually costs, measured
+- 2026-09-11  mock(o1,o2,o3): three variations on the rail the owner chose
+- 2026-09-11  mock(o2): the conversation list hides; the rail never does
+- 2026-09-11  mock(o2): six defects a review agent drove out, and one false claim
+- 2026-09-11  spec(parallel-agents): the o2 shape, and what it actually costs
+- 2026-09-11  spec(parallel-agents): the owner ruled all seven, and one answer was missing
+- 2026-09-11  spec(parallel-agents): a review, and the build order re-cut around what it found
+- 2026-09-11  spec(parallel-agents): section 5 rebuilt as a step-level plan
+- 2026-09-11  mock(p1,p2): the chosen shape in the owner's own minimal language
+- 2026-09-11  spec(parallel-agents): the owner chose p1, and D8 is what it binds
+- 2026-09-11  feat(chats): the conversation list scopes to a project, in the DAEMON
+- 2026-09-11  web: the projects become a rail that filters, the list hides, and the page is restyled to D8 (AC-228..AC-232, phases 1 and 2)
+- 2026-09-11  docs: the spec says what was built, and stops prescribing what was not
+- 2026-09-12  fix: one rule for one directory, and instruments that can fail
+- 2026-09-12  tidy: the restyle's orphans, and the three things that only LOOK dead
+- 2026-09-12  docs(handoff): the rail session, and the rule two parallel agents cost
+- 2026-09-12  docs: a claim with no source, a mechanism that cannot work, and pi's own clock
+- 2026-09-12  spec(parallel-agents): the question protocol, read from eleven products
+- 2026-09-12  feat(ask): a coding agent may ask you a question, and you answer it
+- 2026-09-12  merge: phase 3, an agent may ask you a question (worktree)
+- 2026-09-12  feat(chats): a conversation registry -- the chat you click is the chat you talk to
+- 2026-09-12  merge: phase 4, a conversation registry (worktree)
+- 2026-09-12  test(dox): the typed-turn flake, and why it may not be waved through
+- 2026-09-12  docs(handoff): phases 3 and 4, and the behaviour now live
+- 2026-09-12  docs(handoff): the verification numbers, at HEAD
+- 2026-09-12  feat(hub,web): a device says what it is showing, and a reply can go quiet
+- 2026-09-12  merge: phase 6a, view ownership, mute, and attachment ownership (worktree)
+- 2026-09-12  feat(harness): a child per conversation, with the cap the owner sets
+- 2026-09-12  test(dox): the flake's baseline, and the two explanations that failed
+- 2026-09-12  merge: phase 5, a child per conversation with a settable cap (worktree)
+- 2026-09-12  docs(handoff): phases 5 and 6a, and the ruling the code asked for
+- 2026-09-12  refactor(web,harness,dox): the flags and the prose the four phases left behind
+- 2026-09-12  merge: tidy of phases 3-6a (worktree)
+- 2026-09-12  fix(daemon): a turn writes into the conversation it NAMED, and a deleted one takes its agent with it
+- 2026-09-15  fix(endpointing): an end phrase counts in the spellings a recogniser writes (D-40)
+- 2026-09-15  feat(rail): a tile press files the conversation, and New chat is born in the scope (AC-251)
+- 2026-09-15  fix(rail,list): browsing moves nothing, filing is its own act, and New chat is labelled (AC-251, reversed)
+- 2026-09-15  fix(chats): a delete that removed a file nobody wrote is not a warning
+- 2026-09-15  fix(pipeline): the endword reads the whole transcript, not just the stable half (D-41)
+- 2026-09-16  docs(ui,voice-effects): a UI review, two mocks, the spec, and three backlog items
+- 2026-09-16  feat(voice-effects): a setting, a slot behind the composer, and nine treatments (AC-252..AC-262)
+- 2026-09-16  feat(web): the chat-first page -- three controls in the composer, globals in the header (AC-161..AC-172)
+- 2026-09-16  fix(voice-effects): an armed microphone in a silent room stops looking like an unarmed one
+- 2026-09-16  docs(mocks): the left columns, three ways, then one -- and help that is not universal
+- 2026-09-16  docs(backlog): you cannot tell whether Butler is working or stuck, and the timeouts are tuned for a cloud model
+- 2026-09-16  feat(web): a rail that says the project names, and help that is not universal
+- 2026-09-16  feat(voice-effects): a reduced-motion audit, and the four things it found (steps 6-7)
+- 2026-09-16  feat(hub): a turn belongs to a conversation, and barge-in only stops what you can hear
+- 2026-09-16  docs(dox): phase 6b, the suite hang, and three index paragraphs that were stale
+- 2026-09-16  feat(hub,harness): a turn says it is still working, and what it is doing (phase 7 daemon half)
+- 2026-09-16  feat(web,butlerd): the page says how long it has been working, and what it is doing (phase 7 page half)
+- 2026-09-16  fix(hub): a refresh no longer kills the agent that was working for you
+- 2026-09-16  docs(dox): phase 7 and the refresh-survival fix, across the rail
+- 2026-09-16  feat(chats,web): a conversation row says what its agent is doing (triage phases 1-2)
+- 2026-09-16  feat(web,daemon): the list groups, a row says what its agent is doing, and running is not grey (triage phase 3)
+- 2026-09-16  feat(chats,shortcuts): a chat is born in a project, and Butler's root cannot be lost (filing phase 1)
+- 2026-09-16  fix(web): browsing a project stops re-pointing the conversation Butler is holding
+- 2026-09-17  feat(harness): a project holds one agent, and a quiet one gives its slot back (filing phase 3)
+- 2026-09-17  test(manual): a disposed agent forgets nothing, measured against a real pi (filing phase 4)
+- 2026-09-17  test: the suite stops crying wolf -- three "known failures" were one stale model id
+- 2026-09-17  feat(hub): Butler can stop a conversation that is not the one in front of you (filing phase 5a)
+- 2026-09-17  feat(web,daemon): starting a chat where an agent is working asks first (filing phase 5b)
+- 2026-09-17  fix(harness): one agent's question no longer dies because you opened another project
+- 2026-09-17  docs(dox): the filing work across the rail, and the testing rule that cost the most
+- 2026-09-17  feat(hub): the text stops waiting for the speech (item 2 phase 1)
+- 2026-09-17  fix(web,hub): a capture can be cancelled, and a stopped turn stops rewriting history
+- 2026-09-17  docs(test): the suite never hung -- that entry was mine and it was wrong
+- 2026-09-17  docs(dox): a second Butler on 8140, and the harness picker reads pi's declaration
+- 2026-09-26  feat(web,hub): a chat belongs to its project, and the UI/UX review fixes
+- 2026-09-26  docs(claude): backlog 2026-09-26 -- collapsed-strip chips and a per-project file explorer
+- 2026-09-26  fix(web,hub,chats): the e2e audit's findings -- per-chat turn state, no ghost chats, rooted session refs
+- 2026-09-26  feat: the backlog wave -- text vs speech, turn feedback, identity and memory, file explorer, sidebar collapse, text size
+- 2026-09-26  feat(paths): two folders -- code in the repo, data in E:\Butler-Data with records in .butler
+- 2026-09-26  fix(start): append to butler.log instead of overwriting it on every start
+- 2026-09-26  feat(persona): SOUL.md and USER.md replace the identity setting
+- 2026-09-26  feat(memory): memory v2 -- notes as truth, FTS5 search over notes and chats, two tools, built-in rules
+- 2026-09-26  docs(claude): pending -- update the laptop Butler once it is back online
+- 2026-09-26  docs(automations): spec, owner rulings and the approved phase-0 mock
+- 2026-09-26  feat(library): automations phases 1-4 -- recipes, tasks, Library panel, voice, task_add, schedule engine
+- 2026-09-26  feat(automations): phases 5-6 and 7a -- scheduler, runner, full page, notification channels
+- 2026-09-26  feat(automations): phase 7b and 8 -- run results to Telegram, the desk and the tree
+- 2026-09-27  fix(web): the settings panel can never scroll its own back button off screen
+- 2026-09-27  docs(claude): the laptop Butler is updated; its firewall blocks 8140 over Tailscale
+- 2026-09-27  docs(claude): laptop firewall opened on Tailscale only; Sam's soul and user written
+- 2026-09-27  fix(web): a changed SOUL/USER is named in the settings note, never printed
+- 2026-09-27  docs(dox): the 2026-09-27 fixes and the laptop's two-folder setup
+- 2026-09-27  docs(claude): Ralph loops, persona rule and Projeto grande recipe on Sam's laptop
+- 2026-09-27  docs(claude): video skills, Videos rule and two recipes on Sam's laptop
+- 2026-09-29  fix(start): read the saved BUTLER_DATA from the registry when the session predates it
+- 2026-10-02  docs(dox): shrink the AGENTS.md rail to current contracts; history moves to docs/lessons
+- 2026-10-07  docs(specs): proactive, messaging (WhatsApp + two-way Telegram) and desktop-app proposals
+- 2026-10-07  feat(whatsapp): M1 sidecar port of an earlier prototype's WhatsApp, plus P0/M0/D0 look mocks
+- 2026-10-07  feat: P1 silence + failure streaks, D1 three listeners + trust by listener
+- 2026-10-07  feat(proactive): P2 heartbeat and quiet hours (AC-481..487)
+- 2026-10-07  feat(app): D2/D3 Tauri 2.12 desktop shell (AC-544..551)
+- 2026-10-07  feat(app): D4 per-user NSIS installer, unsigned (AC-552 build half)
+- 2026-10-07  feat(whatsapp): M2 daemon owns the sidecar; pairing routes and settings group
+- 2026-10-07  feat: M4/M5 WhatsApp read + send door + files out, D5 phone link
+- 2026-10-07  feat: P4 script prechecks, M6/M7 WhatsApp into the user's chat with voice
+- 2026-10-07  feat: M8 questions over WhatsApp, P3 reminders and schedule proposals
+- 2026-10-07  feat: M9 WhatsApp guest replies, P5 mail/calendar/webhook triggers
+- 2026-10-07  feat(telegram): T1-T3 two-way Telegram on the shared phone-turn path
+- 2026-10-07  docs: proactive, messaging and desktop-app built; what only a person can check
+- 2026-10-07  docs(dox): the No desktop UI ruling names the Tauri app as its second exception
+- 2026-10-08  docs(dox): laptop deployed 2026-10-08; M3 measured; smart-crawler sync and two-profile rule
+- 2026-10-08  fix(whatsapp): library console output is text only; session keys never reach butler.log
+- 2026-10-08  fix(whatsapp): live own-chat messages are never filed as missed; every phone message logged
+- 2026-10-08  docs(spec): several agents in one project (PROPOSAL, AC-564..585)
+- 2026-10-08  docs(messaging): 6.5 review fixes spec, one decision per finding (AC-586..612)
+- 2026-10-08  fix(messaging): review wave 1 -- security, sidecar and daemon robustness (RV-1..19)
+- 2026-10-08  docs(messaging): RV-25 cross-site WebSocket check (AC-612)
+- 2026-10-08  fix(messaging): review wave 2 -- guests and the cross-site WebSocket (RV-20..25)
+- 2026-10-08  docs(dox): both machines on 50930e6 with the desktop app; laptop WhatsApp measured
+- 2026-10-08  docs(rich-chat): spec for showing files, charts and tables in the chat (AC-613..640 reserved)
+- 2026-10-08  feat(rich-chat): the agent shows images, charts, text, code, CSV, audio and video (AC-613..640)
+- 2026-10-08  feat(guide): Butler knows Butler -- feature index + butler_help (AC-641..656)
+- 2026-10-08  fix(guide): quiet hours explained; the owner's own messages answered at any hour
+- 2026-10-08  feat(library): recipe_find and recipe_propose for the agent (AC-657..670)
+- 2026-10-08  feat(rules): recipe rules keyed on the user's request; check skills too
+- 2026-10-09  fix(voice): opt Butler's voice processes out of Windows power throttling
+- 2026-10-16  docs(rules): todos go to the shared catch-all TODO.md, via SOUL.md and USER.md
+- 2026-10-16  Revert "docs(rules): todos go to the shared catch-all TODO.md, via SOUL.md and USER.md"
+- 2026-10-16  feat(tasks): one main todo list, tagged by project, with a Projects block (AC-671..677)
+- 2026-10-26  feat(macos): run the daemon on macOS (docs/macos.md)
+- 2026-10-26  docs(macos): install results on Ana's Mac mini; third live Butler on 8140
+- 2026-10-26  docs(macos): Ana's brain is deepseek-v4.1-flash via the hub; typed turn answered
+- 2026-10-26  docs(lantern-ui): spec and plan for the simpler page in two styles (AC-678..712)
+- 2026-10-26  fix(fonts): declare Figtree and Inter up to 700 so bold renders bold
+- 2026-10-26  fix(lantern-ui): readable dark greys and a settings-mock overlay bug (CU-17)
+- 2026-10-27  feat(lantern-ui): Step 1 -- settings sections and the agent's finished time (AC-695, AC-700)
+- 2026-10-27  feat(library): served words for the Lantern library surfaces (lantern-ui Step 6 data)
+- 2026-10-27  refactor(web): Step 2 -- the export's token names, today's values, no visible change
+- 2026-10-27  feat(web): Step 3a -- the style switches and the Lantern skin on today's layout
+- 2026-10-27  feat(web): Step 3b -- the Lantern chrome: header, voice popover, sidebar, account menu, one panel
+- 2026-10-27  feat(web): Step 3c -- the Lantern composer, lit border and conversation rows
+- 2026-10-27  feat(web): Step 4 -- Caption as a working second style of the same page
+- 2026-10-27  feat(web): Step 5 -- settings as a categorised sheet (AC-700..AC-705)
+- 2026-10-27  docs(plan): mark the criteria the Lantern redesign supersedes
+- 2026-10-27  feat(web): Step 6a -- the Library tab and its dialogs in the Lantern look
+- 2026-10-27  feat(web): Step 6b -- the Tasks and automations page in the main column; dates worded by the daemon
+- 2026-10-27  feat(web): Step 6c -- files preview, artifact cards, confirms, one toast, the tooltip
+- 2026-10-27  feat(web): Step 7 -- the quality floor (AC-710, AC-711)
+- 2026-10-27  docs: Step 8 -- promote AC-678..AC-712, backlog, handoff (lantern-ui)
+- 2026-10-27  docs: the laptop and the Mac are synced and restarted on the Lantern page
+- 2026-10-27  fix(daemon): an in-page Restart comes back on macOS (SO_REUSEADDR on POSIX)
+- 2026-10-27  docs(macos): the in-page restart trap, its fix, and the supervision gap
+- 2026-10-27  feat(daemon): settings apply with no owner restart (AC-713..AC-716)
+- 2026-10-28  memory: move project lessons out of the global CLAUDE.md
+- 2026-10-29  feat(daemon): one access gate for every route; Tailscale owner and paired devices (AC-720..AC-732)
+- 2026-10-29  docs(remote-access): desk rolled out; start.bat names the real bind
+- 2026-10-29  fix(phonelink): find the Tailscale CLI inside the macOS app bundle
+- 2026-10-29  docs(remote-access): laptop and Mac rolled out; the Mac's launchd CLI gap
+- 2026-10-29  feat(access): standing channels are the owner's (H2); project-roots spec proposed
+- 2026-10-29  feat: a project is never a whole disk (AC-750..AC-753); review fixes
+- 2026-10-29  docs(agents): laptop restart kills the old PID first; prove new code read-only
+- 2026-10-29  docs(readme): rewrite for the public release (accurate install, access, risks)
+- 2026-10-29  docs(backlog): public release pipeline and the two rollout gaps
+- 2026-10-29  docs: chats-and-terminals spec (proposal) and the open release decisions
+- 2026-10-29  feat: in-page terminals and chats on Claude Code and opencode (docs/chats-and-terminals.md)
+- 2026-10-29  feat: the chat's agent chip (AC-771, AC-688); terminals in the guide; docs
+- 2026-10-29  docs: chat-agent-picker spec (proposal) and its mock (options A/B/C)
+- 2026-10-29  feat(daemon): choose a chat's agent at birth or while empty (AC-774..AC-776)
+- 2026-10-29  feat(web): pick a chat's agent -- composer chip while empty, chevron at New chat (AC-777..AC-779)
+- 2026-10-29  docs: per-chat model spec (proposal; Fable UX consult)
+- 2026-10-29  feat(daemon): a model per chat (AC-780..AC-784; docs/chat-model.md)
+- 2026-10-29  feat: per-chat model -- one agent.model chip with a searchable sheet, voice (AC-785..AC-788)
+- 2026-10-29  refactor: simplify the agent and model choice (review of today's diff)
+- 2026-10-29  docs: agent and terminal switches spec (proposal)
+- 2026-10-29  feat: chat agents and terminals are Settings switches (AC-790..AC-798)
+- 2026-10-29  fix: a turn starts where the wake word fired (AC-800..AC-802)
+- 2026-10-29  feat: two wake words, one setting each (AC-803..AC-809)
+- 2026-10-29  docs(agents): laptop restarts go through remoteshell; web/ files prove nothing
+- 2026-10-29  fix: a project added through the route must be a real folder (AC-754)
+- 2026-10-29  feat(settings): plain words for the settings sheet (AC-810..AC-814)
+- 2026-10-29  feat: no separate vision model; images go to the answering model (AC-815..AC-818)
+- 2026-10-29  fix(desk): hold the microphone only while capturing (AC-819..AC-823)
+- 2026-10-29  feat(scripts): fetch-models.py fetches or verifies every model by pinned SHA-256
+- 2026-10-29  chore(gitignore): openWakeWord's non-commercial models stay out of new commits
+- 2026-10-29  chore(release): Apache-2.0 license; README names what the license covers
+- 2026-10-29  fix(deps): baileys 7.0.0-rc14 fixes the critical spoofing advisory; SECURITY.md
+- 2026-10-29  fix(release): fetch-fonts fetches all ten faces and never rewrites fonts.css
+- 2026-10-29  docs(backlog): release state and the publish-day checklist
+- 2026-10-30  fix(whatsapp): a stranger's username no longer counts as a saved contact (rc14)
+- 2026-10-30  feat(install): one-command installer with a --check mode, and INSTALL.md for agents
+- 2026-10-30  docs(readme): a GitHub front page -- hero banner, screenshots, features, quick start

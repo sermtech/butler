@@ -1,0 +1,40 @@
+{
+  "_note": "Trimmed copy of Handy's src-tauri/src/catalog/catalog.json shape. One engine (transcribe.cpp), many models selected by GGUF path. Capabilities are canonical IN the GGUF and re-read at load time; the values here are just for pre-load UI.",
+  "catalog_version": 1,
+  "models": [
+    {
+      "slug": "parakeet-unified-en-0.6b",
+      "name": "Parakeet Unified EN 0.6B",
+      "hf_repo": "handy-computer/parakeet-unified-en-0.6b-gguf",
+      "architecture": "parakeet",
+      "family": "parakeet",
+      "base_model": "nvidia/parakeet-unified-en-0.6b",
+      "license": "cc-by-4.0",
+      "languages": ["en"],
+      "capabilities": { "streaming": true, "translate": false, "lang_detect": false, "timestamps": "token" },
+      "default_quant": "Q8_0",
+      "stream_kind": "buffered",
+      "recommended_rank": 1
+    },
+    {
+      "slug": "nemotron-3.5-asr-streaming-0.6b",
+      "name": "Nemotron Streaming 3.5 (multilingual)",
+      "hf_repo": "handy-computer/nemotron-3.5-asr-streaming-0.6b-gguf",
+      "architecture": "parakeet",
+      "family": "nemotron",
+      "base_model": "nvidia/nemotron-3.5-asr-streaming-0.6b",
+      "license": "other",
+      "languages": ["en-US","es-ES","fr-FR","de-DE","it-IT","pt-BR","nl-NL","ru-RU","zh-CN","ja-JP","ko-KR","hi-IN","ar-AR"],
+      "capabilities": { "streaming": true, "translate": false, "lang_detect": true, "timestamps": "token" },
+      "default_quant": "Q8_0",
+      "stream_kind": "cache_aware",
+      "recommended_rank": 2
+    }
+  ],
+  "latency_presets": {
+    "_note": "parakeet buffered-streaming (L,C,R) tuples in ms at the 80ms frame rate. Lookahead = chunk + right. See docs/models/parakeet-unified-en-0.6b.md.",
+    "low":      { "left_ms": 5600, "chunk_ms": 160, "right_ms": 160, "lookahead_ms": 320,  "label": "low latency (70,2,2)" },
+    "balanced": { "left_ms": 5600, "chunk_ms": 560, "right_ms": 560, "lookahead_ms": 1120, "label": "balanced (70,7,7)" },
+    "accurate": { "left_ms": 5600, "chunk_ms": 1040, "right_ms": 1040, "lookahead_ms": 2080, "label": "best accuracy (70,13,13)" }
+  }
+}

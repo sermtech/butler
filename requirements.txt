@@ -1,0 +1,73 @@
+# Butler daemon -- Python side.
+# Install with uv (preferred on this machine):
+#   uv venv .venv
+#   .venv\Scripts\python.exe -m ensurepip
+#   uv pip install --python .venv\Scripts\python.exe -r requirements.txt
+#
+# Run everything with -X utf8 on Windows.
+
+# HTTP + WebSocket server for satellites and the web UI
+aiohttp>=3.9
+
+# Audio buffers, Smart Turn feature pipeline
+numpy>=1.26
+
+# Streaming ASR. Prebuilt Windows wheel bundling libtranscribe.dll plus the
+# CPU and Vulkan ggml backends -- no C++ build step. Pinned because the
+# streaming stream-option classes are not yet API-stable across releases.
+transcribe-cpp==0.1.3
+
+# Smart Turn v3.2 end-of-turn model. MUST run in its own child process with
+# single-threaded BLAS -- see daemon/engines/turn_engine.py for the measured
+# reason (1960 ms in a thread pool vs 33 ms in a BLAS-capped child).
+onnxruntime>=1.17
+
+# Reading an attached document WITHOUT a model (AC-200, docs/attachments.md).
+# Both are local, pure-Python-ish and need no GPU, which is the point: this
+# machine's card is below the compute-capability floor for most current vision
+# stacks [MEASURED 2026-09-10], so "just send it to a vision model" is a
+# network call on every page of every PDF. A text-layer PDF and a .docx are
+# the overwhelmingly common case and neither needs one.
+# A scan with no text layer falls through to the vision path; no local OCR
+# engine is added, because that is a third dependency and a model for a case
+# the owner has not hit (docs/attachments.md 5.3).
+pypdf>=6.0
+python-docx>=1.1
+
+# Which language one utterance is in (AC-207, docs/language-auto.md). BSD, one
+# dependency (numpy, already here), and a 4 MB character-n-gram model that
+# needs no GPU and no network -- which is the whole reason it is this and not a
+# model call: the decision is made on EVERY turn, before Butler speaks, and a
+# round trip there would be added to time-to-first-audio (AC-4). MEASURED
+# 2026-09-11: 497 ms to load the model once at boot, 0.02 ms per
+# classification, and 0 wrong answers on 41 utterances across both languages
+# (test/manual/spike_language_id.py).
+# It is restricted to the languages the SPEECH engine has voices for rather
+# than run over all 97 it knows, which is what keeps it accurate on the two
+# that matter.
+py3langid>=0.4
+
+# Desk microphone for the hotkey agent (desk/audio.py). PortAudio via cffi.
+# `plan.md` 8.5 asks sounddevice vs a WASAPI-specific alternative and sets the
+# bar at a 24 h drift spike -- the owner ruled that bar does not apply here
+# (docs/desk-hotkeys.md D5), because it was written for AC-24's ALWAYS-ON
+# native source and a dictation opens the device for seconds. 8.5 stays open
+# for AC-24. MEASURED 2026-09-09: 16 kHz mono int16 is accepted DIRECTLY on
+# this machine, so nothing resamples.
+sounddevice>=0.5
+
+# Calendar triggers (docs/proactive.md PR-27, O-3 [DECIDED]): parsing an .ics
+# feed and expanding its RRULE/RDATE/EXDATE recurrences. Recurrence is
+# genuinely hard and a hand-written subset misses real calendars. Installed
+# 2026-10-07 as icalendar 7.3.0 and recurring-ical-events 3.8.2; they pull in
+# python-dateutil, tzdata and x-wr-timezone.
+icalendar>=7.3
+recurring-ical-events>=3.8
+
+# --- test only -------------------------------------------------------------
+# The harness drives butlerd over a real WebSocket, so the async fixtures are
+# not optional. pytest-asyncio in strict mode: every async test is marked, so
+# a forgotten mark fails loudly instead of silently not running (D-13 -- a
+# test that does not execute is an instrument that lies).
+pytest>=8.0
+pytest-asyncio>=0.24

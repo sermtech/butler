@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <!-- The home-screen icon (AC-106). The page's own microphone glyph over the
+       dark theme's background, drawn here rather than fetched: web/ may not
+       depend on the public internet to render itself (web/AGENTS.md), and an
+       icon is no different from a font in that respect.
+       Vector, so one file serves every size. The safe area for a `maskable`
+       icon is the middle 80%, which is why the glyph sits inside r=58 of a
+       192 box. Colours are the literal sRGB of the dark theme's --bg and --fg,
+       because a manifest icon cannot read a custom property. -->
+  <rect width="192" height="192" rx="42" fill="#131320"/>
+  <g fill="none" stroke="#f5f6f9" stroke-width="9" stroke-linecap="round">
+    <rect x="75" y="46" width="42" height="66" rx="21"/>
+    <path d="M53 100a43 43 0 0 0 86 0"/>
+    <path d="M96 143v22"/>
+  </g>
+</svg>

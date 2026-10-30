@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Butler at login on macOS (docs/macos.md). Install by replacing @REPO@ and
+     @HOME@, then `launchctl bootstrap gui/$(id -u) <this file>`.
+     launch.py clears the ports, starts the daemon in a session of its own and
+     exits; AbandonProcessGroup keeps launchd from reaping what it started. -->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.butler.daemon</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>@REPO@/.venv/bin/python</string>
+    <string>-X</string>
+    <string>utf8</string>
+    <string>@REPO@/scripts/launch.py</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>@REPO@</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>BUTLER_DATA</key>
+    <string>@HOME@/Butler-Data</string>
+    <!-- launchd's PATH has no Homebrew: node (speech), pi, ffmpeg live there. -->
+    <key>PATH</key>
+    <string>@HOME@/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>AbandonProcessGroup</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>@HOME@/Butler-Data/.butler/logs/launchd.log</string>
+  <key>StandardErrorPath</key>
+  <string>@HOME@/Butler-Data/.butler/logs/launchd.log</string>
+</dict>
+</plist>

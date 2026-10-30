@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "The app's own pages (app/ui) only. No remote URL is listed, so Butler's page on 8141 reaches no app command (Tauri refuses remote IPC without a remote capability).",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}

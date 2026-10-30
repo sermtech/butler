@@ -1,0 +1,30 @@
+{
+  "name": "butler",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Always-on voice daemon: hands-free speech in, coding-agent workers out, spoken answers back.",
+  "scripts": {
+    "tts": "node daemon/engines/tts/tts-sidecar.mjs",
+    "whatsapp": "node daemon/engines/whatsapp/wa-sidecar.mjs",
+    "test:whatsapp": "node --test \"daemon/engines/whatsapp/test/*.test.mjs\""
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^3.8.1",
+    "@whiskeysockets/baileys": "7.0.0-rc14",
+    "@xterm/addon-serialize": "^0.14.0",
+    "@xterm/headless": "^6.0.0",
+    "espeak-ng": "^1.0.2",
+    "kokoro-js": "^1.2.1",
+    "node-pty": "^1.1.0",
+    "qrcode": "^1.5.4"
+  },
+  "overrides": {
+    "@huggingface/transformers": {
+      "onnxruntime-node": "1.22.0"
+    }
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

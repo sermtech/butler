@@ -1,0 +1,1333 @@
+<!doctype html>
+<!--
+  Butler UI mock -- single self-contained file, no network, opens from file://.
+  This page is a high-fidelity interactive mock of the Butler satellite/web UI
+  described in plan.md (sections 2, 4.2-4.7). Everything is simulated; the
+  "MOCK CONTROLS" panel at the bottom is scaffolding for design review.
+-->
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Butler — mock</title>
+<style>
+/* ============================== tokens ================================= */
+:root{
+  --bg:#0a0d12; --panel:#10141b; --panel2:#161c26; --line:#232b38;
+  --text:#dbe2ec; --muted:#8a95a7; --faint:#5a6577;
+  --accent:hsl(38 90% 60%); --accent-ink:#181004;
+  --ok:hsl(152 50% 46%); --bad:hsl(5 75% 58%);
+  --viz-mic:hsl(195 60% 60%); --viz-wake:hsl(152 55% 52%);
+  --viz-out:hsl(42 85% 58%); --viz-grid:#28303e;
+  --shadow:0 1px 2px rgb(0 0 0 / .35);
+  --fs0:11px; --fs1:12.5px; --fs2:14px; --fs3:16px; --fs4:20px; --fs5:26px; --fs6:36px;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,Menlo,monospace;
+  --sans:ui-sans-serif,system-ui,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+html[data-theme="light"]{
+  --bg:#f3f1ea; --panel:#fbfaf6; --panel2:#eeebe2; --line:#d9d4c8;
+  --text:#20242c; --muted:#5c6470; --faint:#8b93a0;
+  --accent:hsl(30 90% 38%); --accent-ink:#fff;
+  --ok:hsl(152 55% 32%); --bad:hsl(5 70% 42%);
+  --viz-mic:hsl(200 65% 38%); --viz-wake:hsl(152 55% 32%);
+  --viz-out:hsl(35 90% 36%); --viz-grid:#ddd8cc;
+  --shadow:0 1px 3px rgb(60 50 20 / .12);
+  color-scheme:light;
+}
+/* state color: hue is the ONLY channel that means "session state" */
+body[data-state="idle"]     {--stateC:hsl(152 50% 46%);}
+body[data-state="wake"]     {--stateC:hsl(145 90% 55%);}
+body[data-state="capture"]  {--stateC:hsl(190 85% 55%);}
+body[data-state="endpoint"] {--stateC:hsl(205 85% 60%);}
+body[data-state="reflex"]   {--stateC:hsl(25 90% 55%);}
+body[data-state="converse"] {--stateC:hsl(225 85% 66%);}
+body[data-state="speak"]    {--stateC:hsl(45 95% 55%);}
+body[data-state="clarify"]  {--stateC:hsl(265 70% 68%);}
+body[data-state="confirm"]  {--stateC:hsl(5 85% 58%);}
+html[data-theme="light"] body[data-state="idle"]     {--stateC:hsl(152 55% 32%);}
+html[data-theme="light"] body[data-state="wake"]     {--stateC:hsl(145 80% 30%);}
+html[data-theme="light"] body[data-state="capture"]  {--stateC:hsl(195 85% 32%);}
+html[data-theme="light"] body[data-state="endpoint"] {--stateC:hsl(207 85% 36%);}
+html[data-theme="light"] body[data-state="reflex"]   {--stateC:hsl(25 90% 38%);}
+html[data-theme="light"] body[data-state="converse"] {--stateC:hsl(228 75% 44%);}
+html[data-theme="light"] body[data-state="speak"]    {--stateC:hsl(42 95% 34%);}
+html[data-theme="light"] body[data-state="clarify"]  {--stateC:hsl(265 55% 44%);}
+html[data-theme="light"] body[data-state="confirm"]  {--stateC:hsl(5 75% 42%);}
+
+/* ============================== base =================================== */
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--bg); color:var(--text);
+  font:var(--fs2)/1.5 var(--sans);
+  overflow-x:hidden;
+  padding-bottom:calc(64px + env(safe-area-inset-bottom));
+}
+@media (min-width:768px){ body{padding-bottom:24px} }
+h1,h2{margin:0;font-weight:600}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.micro{font-size:var(--fs0);letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:600}
+
+/* ============================== header ================================= */
+header.top{
+  position:sticky;top:0;z-index:30;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  background:var(--bg); border-bottom:1px solid var(--line);
+  padding:calc(8px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 8px max(16px,env(safe-area-inset-left));
+}
+.brand{font-size:var(--fs3);font-weight:700;letter-spacing:.22em}
+.proto{font-size:var(--fs0);color:var(--faint);font-family:var(--mono)}
+.lamp{width:12px;height:12px;border-radius:50%;background:var(--stateC);
+  box-shadow:0 0 10px var(--stateC);flex:none}
+.pill{
+  display:inline-flex;align-items:center;gap:8px;
+  border:1px solid var(--line);border-radius:999px;
+  background:var(--panel);padding:6px 12px;font-size:var(--fs1);
+  color:var(--muted);min-height:32px}
+.pill b{color:var(--text);font-weight:600}
+.spacer{flex:1}
+.chipbtn{
+  display:inline-flex;align-items:center;gap:8px;min-height:44px;
+  border:1px solid var(--line);border-radius:10px;background:var(--panel);
+  padding:6px 12px;cursor:pointer;font-size:var(--fs1);color:var(--muted)}
+.chipbtn b{color:var(--text)}
+.chipbtn:hover,.chipbtn:active{border-color:var(--accent)}
+#themeBtn svg{width:18px;height:18px;display:block}
+html[data-theme="dark"] .ic-sun{display:none}
+html[data-theme="light"] .ic-moon{display:none}
+
+/* ============================== layout ================================= */
+main{
+  padding:16px max(16px,env(safe-area-inset-right)) 16px max(16px,env(safe-area-inset-left));
+  max-width:1720px;margin:0 auto;
+  display:flex;flex-direction:column;gap:16px;
+}
+.colwrap{display:contents}
+@media (min-width:768px){
+  main{display:grid;grid-template-columns:minmax(0,1fr) 340px;align-items:start}
+  .colwrap{display:flex;flex-direction:column;gap:16px;min-width:0}
+  .col-left{grid-column:1;grid-row:1}
+  .col-mid{grid-column:1;grid-row:2}
+  .col-right{grid-column:2;grid-row:1 / span 2}
+  .devpanel{grid-column:1 / -1}
+}
+@media (min-width:1200px){
+  main{grid-template-columns:380px minmax(0,1fr) 340px}
+  .col-left{grid-column:1;grid-row:1}
+  .col-mid{grid-column:2;grid-row:1}
+  .col-right{grid-column:3;grid-row:1}
+  .devpanel{grid-column:1 / -1}
+}
+.card{
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:16px;box-shadow:var(--shadow);min-width:0}
+.card>.micro{display:block;margin-bottom:10px}
+section{scroll-margin-top:84px}
+
+/* ============================== stage ================================== */
+.stage{border-color:color-mix(in srgb, var(--stateC) 35%, var(--line))}
+.stage-head{display:flex;align-items:center;gap:14px}
+.biglamp{width:20px;height:20px;border-radius:50%;background:var(--stateC);
+  box-shadow:0 0 16px var(--stateC), 0 0 2px var(--stateC);flex:none;
+  animation:breathe 4s ease-in-out infinite}
+body[data-state="capture"] .biglamp{animation-duration:1.6s}
+body[data-state="confirm"] .biglamp{animation:blink 1s steps(2,end) infinite}
+@keyframes breathe{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes blink{0%{opacity:1}50%{opacity:.35}}
+#stateName{font-size:var(--fs5);line-height:1.2;color:var(--text)}
+#stateSub{color:var(--muted);font-size:var(--fs1);margin-top:2px}
+.stage-body{margin-top:16px;min-height:190px}
+.stg[hidden]{display:none}
+
+/* idle */
+.idle-ring{display:flex;align-items:center;gap:14px;color:var(--muted)}
+.idle-ring .ringviz{width:52px;height:52px;border-radius:50%;flex:none;
+  border:2px solid color-mix(in srgb, var(--stateC) 55%, transparent);
+  display:grid;place-items:center;animation:breathe 4s ease-in-out infinite}
+.idle-ring .ringviz::after{content:"";width:10px;height:10px;border-radius:50%;
+  background:var(--stateC)}
+/* wake */
+.wake-score{font-size:var(--fs6);font-family:var(--mono);color:var(--stateC);line-height:1.1}
+.wake-meta{color:var(--muted);font-size:var(--fs1);margin-top:6px}
+/* capture live text */
+#liveBox{font-size:var(--fs4);line-height:1.4;min-height:84px}
+#liveC{color:var(--text)}
+#liveT{color:var(--faint);font-style:italic}
+.caret{display:inline-block;width:2px;height:1.05em;background:var(--stateC);
+  vertical-align:-2px;margin-left:2px;animation:blink 1s steps(2,end) infinite}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.chip{font-size:var(--fs0);font-family:var(--mono);color:var(--muted);
+  border:1px solid var(--line);border-radius:6px;padding:3px 8px;background:var(--panel2)}
+/* endpoint */
+#epText{color:var(--text);font-size:var(--fs3);margin-bottom:14px}
+.meter{position:relative;height:14px;border-radius:7px;background:var(--panel2);
+  border:1px solid var(--line);overflow:hidden}
+.meter .fill{position:absolute;inset:0 auto 0 0;width:0%;background:var(--stateC);
+  transition:width .35s ease}
+.meter .thr{position:absolute;top:-3px;bottom:-3px;left:60%;width:2px;
+  background:var(--bad)}
+.meter-row{display:flex;justify-content:space-between;align-items:baseline;margin-top:8px;
+  font-size:var(--fs1);color:var(--muted)}
+/* thinking */
+.tierbadge{display:inline-flex;align-items:center;gap:8px;border-radius:8px;
+  padding:6px 12px;font-family:var(--mono);font-size:var(--fs1);border:1px solid}
+.tierbadge.reflex{color:hsl(25 90% 60%);border-color:hsl(25 90% 40% / .5);background:hsl(25 90% 50% / .08)}
+.tierbadge.converse{color:hsl(225 85% 72%);border-color:hsl(225 85% 55% / .5);background:hsl(225 85% 60% / .08)}
+html[data-theme="light"] .tierbadge.reflex{color:hsl(25 90% 34%)}
+html[data-theme="light"] .tierbadge.converse{color:hsl(228 75% 40%)}
+.tierbadge .tdot{width:8px;height:8px;border-radius:50%;background:currentColor;
+  animation:breathe 1s ease-in-out infinite}
+#thinkStream{margin-top:14px;font-size:var(--fs1);color:var(--muted);
+  font-family:var(--mono);display:none}
+#thinkStream.on{display:block}
+#thinkStream div{padding:2px 0;border-left:2px solid var(--line);padding-left:10px;margin:4px 0}
+.think-note{margin-top:12px;color:var(--faint);font-size:var(--fs1)}
+/* speaking */
+#speakLabel{color:var(--stateC)}
+#speakSentence{font-size:var(--fs4);line-height:1.4;margin:10px 0 14px;min-height:60px}
+.hint{display:inline-flex;align-items:center;gap:8px;color:var(--muted);
+  font-size:var(--fs1);border:1px dashed var(--line);border-radius:8px;padding:6px 10px}
+/* clarify */
+#clarifyQ{font-size:var(--fs4);line-height:1.4}
+.openmic{display:inline-flex;align-items:center;gap:8px;margin-top:14px;
+  color:var(--stateC);font-size:var(--fs1)}
+.openmic .tdot{width:9px;height:9px;border-radius:50%;background:var(--stateC);
+  animation:breathe 1.4s ease-in-out infinite}
+#clarLive{margin-top:10px;color:var(--muted);font-style:italic;min-height:24px}
+/* confirm */
+.stg-confirm{border:1px solid color-mix(in srgb, var(--stateC) 55%, var(--line));
+  border-radius:12px;padding:16px;background:color-mix(in srgb, var(--stateC) 6%, var(--panel))}
+.confirm-tag{color:var(--stateC);font-weight:700}
+#confirmText{font-size:var(--fs4);line-height:1.4;margin:10px 0 16px}
+.cdrow{display:flex;align-items:center;gap:12px}
+.cdbar{flex:1;height:10px;border-radius:5px;background:var(--panel2);
+  border:1px solid var(--line);overflow:hidden}
+.cdbar .fill{height:100%;width:100%;background:var(--stateC)}
+#cdNum{font-family:var(--mono);font-size:var(--fs3);color:var(--stateC);min-width:44px;text-align:right}
+.confirm-note{margin-top:12px;color:var(--muted);font-size:var(--fs1)}
+#confirmHeard{margin-top:10px;font-family:var(--mono);font-size:var(--fs1);color:var(--ok);min-height:20px}
+
+/* ============================== audio panel ============================ */
+.viz{margin-top:6px}
+.viz + .viz{margin-top:16px}
+.vizhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.vizhead .val{font-family:var(--mono);font-size:var(--fs1);color:var(--muted)}
+canvas.strip{display:block;width:100%;border:1px solid var(--line);
+  border-radius:8px;background:var(--panel2)}
+#cvMic{height:64px}
+#cvWake{height:72px}
+#cvOut{height:52px}
+.vizfoot{font-size:var(--fs0);color:var(--faint);margin-top:4px;font-family:var(--mono)}
+
+/* ============================== transcript ============================= */
+#logList{display:flex;flex-direction:column;gap:14px;max-height:560px;overflow-y:auto;
+  padding-right:4px}
+.entry{display:flex;flex-direction:column;gap:4px}
+.entry .who{font-size:var(--fs0);letter-spacing:.1em;text-transform:uppercase;
+  color:var(--faint);font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.entry .txt{font-size:var(--fs2)}
+.entry.you .txt{color:var(--muted)}
+.entry.butler .txt{color:var(--text)}
+.badge{font-size:var(--fs0);font-family:var(--mono);letter-spacing:0;text-transform:none;
+  border-radius:5px;padding:1px 7px;border:1px solid}
+.badge.reflex{color:hsl(25 90% 60%);border-color:hsl(25 90% 40%/.5)}
+.badge.converse{color:hsl(225 85% 72%);border-color:hsl(225 85% 55%/.5)}
+.badge.announce{color:var(--ok);border-color:color-mix(in srgb, var(--ok) 50%, transparent)}
+.badge.clarify{color:hsl(265 70% 70%);border-color:hsl(265 70% 55%/.5)}
+html[data-theme="light"] .badge.reflex{color:hsl(25 90% 34%)}
+html[data-theme="light"] .badge.converse{color:hsl(228 75% 40%)}
+html[data-theme="light"] .badge.clarify{color:hsl(265 55% 42%)}
+.tchip{font-size:var(--fs0);font-family:var(--mono);color:var(--faint);letter-spacing:0;text-transform:none}
+.screenonly{border:1px solid var(--line);border-radius:10px;background:var(--panel2);
+  padding:10px 12px}
+.screenonly summary{cursor:pointer;font-size:var(--fs1);color:var(--muted);
+  display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-height:28px}
+.screenonly summary::-webkit-details-marker{display:none}
+.screenonly pre{margin:10px 0 0;font:var(--fs1)/1.5 var(--mono);color:var(--muted);
+  white-space:pre-wrap;overflow-wrap:anywhere}
+.ptr{font-size:var(--fs0);font-family:var(--mono);color:var(--accent);
+  border:1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  border-radius:5px;padding:1px 7px}
+
+/* ============================== right panels =========================== */
+.seg{display:flex;flex-direction:column;gap:8px}
+.seg button{
+  display:flex;align-items:center;gap:10px;min-height:52px;text-align:left;
+  border:1px solid var(--line);border-radius:10px;background:var(--panel2);
+  padding:8px 12px;cursor:pointer}
+.seg button .mname{font-weight:600;font-size:var(--fs2)}
+.seg button .mdesc{font-size:var(--fs0);color:var(--faint);letter-spacing:0;text-transform:none}
+.seg button .dir{margin-left:auto;font-family:var(--mono);font-size:var(--fs0);
+  color:var(--faint);white-space:nowrap}
+.seg button[aria-pressed="true"]{border-color:var(--accent);
+  background:color-mix(in srgb, var(--accent) 10%, var(--panel2))}
+.seg button[aria-pressed="true"] .dir{color:var(--accent)}
+.seg button.up .dir{color:var(--bad)}
+.modefoot{margin-top:12px;font-size:var(--fs0);font-family:var(--mono);color:var(--faint)}
+.asym{margin-top:10px;font-size:var(--fs1);color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.asym b{font-weight:600;color:var(--text)}
+#modeConfirm{margin-top:12px;border:1px solid color-mix(in srgb, var(--bad) 55%, var(--line));
+  border-radius:10px;padding:12px;background:color-mix(in srgb, var(--bad) 6%, var(--panel))}
+#modeConfirm p{margin:0 0 10px;font-size:var(--fs1)}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.btn{min-height:44px;padding:8px 16px;border-radius:10px;border:1px solid var(--line);
+  background:var(--panel2);cursor:pointer;font-size:var(--fs1)}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.danger{border-color:color-mix(in srgb, var(--bad) 60%, var(--line));color:var(--bad)}
+
+/* workers */
+#workerList{display:flex;flex-direction:column;gap:12px}
+.wcard{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--panel2)}
+.wtop{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.wharness{font-family:var(--mono);font-size:var(--fs0);font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;border:1px solid var(--line);border-radius:5px;padding:2px 7px}
+.wstatus{font-size:var(--fs0);font-family:var(--mono);display:inline-flex;gap:6px;align-items:center;margin-left:auto}
+.wstatus .wdot{width:8px;height:8px;border-radius:50%}
+.wcard.running .wstatus{color:var(--ok)}
+.wcard.running .wdot{background:var(--ok);animation:breathe 1.2s ease-in-out infinite}
+.wcard.done .wstatus{color:var(--muted)}
+.wcard.done .wdot{background:var(--muted)}
+.wcard.queued .wstatus{color:var(--faint)}
+.wcard.queued .wdot{background:transparent;border:1px solid var(--faint)}
+.wtask{margin-top:6px;font-size:var(--fs1)}
+.wmeta{margin-top:4px;font-size:var(--fs0);font-family:var(--mono);color:var(--faint)}
+.wlog{margin:10px 0 0;padding:0;list-style:none;font:var(--fs0)/1.7 var(--mono);
+  color:var(--muted);max-height:120px;overflow-y:auto}
+.wlog li{border-left:2px solid var(--line);padding-left:8px;overflow-wrap:anywhere}
+.wlog li.steer{color:var(--accent);border-left-color:var(--accent)}
+.wlog li.doneline{color:var(--ok);border-left-color:var(--ok)}
+.steerrow{display:flex;gap:8px;margin-top:10px}
+.steerrow input{flex:1;min-width:0;min-height:44px;background:var(--panel);
+  border:1px solid var(--line);border-radius:8px;color:var(--text);
+  padding:8px 10px;font:var(--fs1) var(--sans)}
+.wsummary{margin-top:8px;font-size:var(--fs1);color:var(--muted)}
+.wsummary b{color:var(--text)}
+
+/* devices */
+#deviceList{display:flex;flex-direction:column;gap:10px}
+.drow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);
+  border-radius:10px;padding:10px 12px;background:var(--panel2)}
+.ddot{width:9px;height:9px;border-radius:50%;background:var(--ok);flex:none}
+.drow .dname{font-weight:600;font-size:var(--fs1)}
+.drow .dagent{font-size:var(--fs0);color:var(--faint);font-family:var(--mono)}
+.drow .dscore{margin-left:auto;text-align:right}
+.drow .sval{font-family:var(--mono);font-size:var(--fs1)}
+.drow .snote{font-size:var(--fs0);font-family:var(--mono);color:var(--faint)}
+.drow.won{border-color:color-mix(in srgb, var(--ok) 55%, var(--line))}
+.drow.won .snote{color:var(--ok)}
+.drow.lost .snote{color:var(--bad)}
+.devfoot{margin-top:10px;font-size:var(--fs0);font-family:var(--mono);color:var(--faint)}
+
+/* announcements */
+#annList{display:flex;flex-direction:column;gap:10px}
+.ann{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--panel2)}
+.ann .atxt{font-size:var(--fs1)}
+.ann .astat{margin-top:4px;font-size:var(--fs0);font-family:var(--mono);color:var(--faint)}
+.ann.queued{border-color:color-mix(in srgb, var(--accent) 50%, var(--line))}
+.ann.queued .astat{color:var(--accent)}
+.ann.playing{border-color:color-mix(in srgb, var(--ok) 55%, var(--line))}
+.ann.playing .astat{color:var(--ok)}
+.annfoot{margin-top:10px;font-size:var(--fs0);color:var(--faint)}
+
+/* ============================== dev panel ============================== */
+.devpanel{border:1px dashed color-mix(in srgb, var(--accent) 55%, var(--line));
+  background:repeating-linear-gradient(-45deg, transparent 0 14px,
+    color-mix(in srgb, var(--accent) 4%, transparent) 14px 15px), var(--panel)}
+.devpanel .micro{color:var(--accent)}
+.devrows{display:flex;flex-direction:column;gap:12px}
+.devrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.devrow .lbl{font-size:var(--fs0);font-family:var(--mono);color:var(--faint);
+  min-width:110px;text-transform:uppercase;letter-spacing:.08em}
+.devnote{font-size:var(--fs0);color:var(--faint);font-family:var(--mono);margin-top:4px}
+
+/* ============================== bottom nav ============================= */
+nav.bnav{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;
+  display:flex;background:var(--panel);border-top:1px solid var(--line);
+  padding:4px max(8px,env(safe-area-inset-right)) calc(4px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));
+}
+nav.bnav button{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+  min-height:52px;border:0;background:none;cursor:pointer;
+  color:var(--faint);font-size:var(--fs0);border-radius:8px}
+nav.bnav button svg{width:20px;height:20px}
+nav.bnav button:active{color:var(--accent)}
+@media (min-width:768px){ nav.bnav{display:none} }
+
+/* toasts */
+#toasts{position:fixed;top:calc(64px + env(safe-area-inset-top));left:50%;
+  transform:translateX(-50%);z-index:50;display:flex;flex-direction:column;
+  gap:8px;width:min(92vw,420px);pointer-events:none}
+.toast{background:var(--panel2);border:1px solid var(--accent);border-radius:10px;
+  padding:10px 14px;font-size:var(--fs1);box-shadow:var(--shadow);text-align:center}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none !important;transition:none !important}
+}
+</style>
+</head>
+<body data-state="idle">
+
+<header class="top">
+  <span class="lamp" aria-hidden="true"></span>
+  <span class="brand">BUTLER</span>
+  <span class="proto">proto&nbsp;v1&nbsp;· wss</span>
+  <span class="pill" id="statePill"><b id="pillState">idle · wake-listening</b></span>
+  <span class="spacer"></span>
+  <button class="chipbtn" id="modeChip" type="button" title="Permission mode — server-side, shared across devices">
+    mode&nbsp;<b id="modeChipVal">secretary</b>
+  </button>
+  <button class="chipbtn" id="themeBtn" type="button" aria-label="Toggle light or dark theme">
+    <svg class="ic-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    <svg class="ic-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+  </button>
+</header>
+
+<main>
+<div class="colwrap col-left">
+
+  <!-- ============================ STAGE ============================ -->
+  <section class="card stage" id="stagePanel" aria-label="Session state">
+    <div class="stage-head">
+      <span class="biglamp" aria-hidden="true"></span>
+      <div>
+        <h1 id="stateName">Listening for “hey butler”</h1>
+        <div id="stateSub">armed · mic stays local · nothing streams to the daemon</div>
+      </div>
+    </div>
+    <div class="stage-body">
+
+      <div class="stg" id="stgIdle">
+        <div class="idle-ring">
+          <div class="ringviz" aria-hidden="true"></div>
+          <div>Wake detection runs in this page. Audio leaves the device only
+            after a wake word wins arbitration.<br>
+            <span class="num" style="font-size:var(--fs0);color:var(--faint)">detector hey-butler · threshold 0.50 · refractory 2000 ms</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stg" id="stgWake" hidden>
+        <div class="wake-score"><span id="wakeScoreBig">0.87</span><span style="font-size:var(--fs3);color:var(--faint)"> / 0.50</span></div>
+        <div class="wake-meta" id="wakeWho">desk won arbitration · phone 0.61 rejected (lost_arbitration)</div>
+        <div class="chips"><span class="chip">pre-roll ring buffering</span><span class="chip">window ~300 ms</span></div>
+      </div>
+
+      <div class="stg" id="stgCapture" hidden>
+        <div id="liveBox"><span id="liveC"></span> <span id="liveT"></span><span class="caret" aria-hidden="true"></span></div>
+        <div class="chips">
+          <span class="chip" id="chipFirst">first partial — ms</span>
+          <span class="chip">committed solid · tentative dim</span>
+          <span class="chip">streaming 16 k PCM</span>
+        </div>
+      </div>
+
+      <div class="stg" id="stgEndpoint" hidden>
+        <div id="epText"></div>
+        <div class="meter" role="img" aria-label="End-of-turn probability meter, finalize threshold 0.6">
+          <div class="fill" id="epFill"></div>
+          <div class="thr" aria-hidden="true"></div>
+        </div>
+        <div class="meter-row">
+          <span>smart-turn <b class="num" id="epVal">p = 0.00</b></span>
+          <span class="num" id="epStatus">first check 280 ms · recheck 450 ms</span>
+          <span class="num">finalize ≥ 0.60</span>
+        </div>
+      </div>
+
+      <div class="stg" id="stgThink" hidden>
+        <span class="tierbadge" id="thinkBadge"><span class="tdot" aria-hidden="true"></span><span id="thinkBadgeTxt">REFLEX · local</span></span>
+        <span class="num" id="thinkMs" style="margin-left:12px;color:var(--muted)">0 ms</span>
+        <div id="thinkStream"></div>
+        <div class="think-note" id="thinkNote">strict-JSON verdict from the always-warm local model</div>
+      </div>
+
+      <div class="stg" id="stgSpeak" hidden>
+        <span class="micro" id="speakLabel">Reply</span>
+        <div id="speakSentence"></div>
+        <span class="hint">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+          say <b>“hey butler”</b> to interrupt
+        </span>
+      </div>
+
+      <div class="stg" id="stgClarify" hidden>
+        <div id="clarifyQ">Which project — butler or the site?</div>
+        <span class="openmic"><span class="tdot" aria-hidden="true"></span>mic open — no wake word needed · one clarify max, then the conversation tier</span>
+        <div id="clarLive"></div>
+      </div>
+
+      <div class="stg" id="stgConfirm" hidden>
+        <div class="stg-confirm">
+          <span class="micro confirm-tag">Confirm — write gated</span>
+          <div id="confirmText"></div>
+          <div class="cdrow">
+            <div class="cdbar"><div class="fill" id="cdFill"></div></div>
+            <span id="cdNum">8.0</span>
+          </div>
+          <div class="confirm-note">Silence cancels. Only a clear “yes” proceeds; “no”, ambiguity, or the timeout fail closed — nothing is spawned until then.</div>
+          <div id="confirmHeard" aria-live="polite"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================ AUDIO ============================ -->
+  <section class="card" id="audioPanel" aria-label="Audio monitors">
+    <span class="micro">Audio</span>
+    <div class="viz">
+      <div class="vizhead"><span class="micro">Mic input</span><span class="val" id="micDb">−48 dB</span></div>
+      <canvas class="strip" id="cvMic"></canvas>
+      <div class="vizfoot">48 k → worklet → 16 k int16 · EC on · NS on</div>
+    </div>
+    <div class="viz">
+      <div class="vizhead"><span class="micro">Wake detector</span><span class="val" id="wakeNow">0.06</span></div>
+      <canvas class="strip" id="cvWake"></canvas>
+      <div class="vizfoot">score trace · dashed line = 0.50 fire threshold · bumps below it are near-misses</div>
+    </div>
+    <div class="viz">
+      <div class="vizhead"><span class="micro">Butler output</span><span class="val" id="outState">quiet</span></div>
+      <canvas class="strip" id="cvOut"></canvas>
+      <div class="vizfoot">kokoro 24 k PCM · one playback worklet, queue-fed</div>
+    </div>
+  </section>
+</div>
+
+<div class="colwrap col-mid">
+  <!-- ========================== TRANSCRIPT ========================= -->
+  <section class="card" id="transcriptPanel" aria-label="Transcript">
+    <span class="micro">Transcript</span>
+    <div id="logList" aria-live="polite"></div>
+  </section>
+</div>
+
+<div class="colwrap col-right">
+
+  <!-- ============================ MODE ============================= -->
+  <section class="card" id="modePanel" aria-label="Permission mode">
+    <span class="micro">Permission mode</span>
+    <div class="seg" id="modeSeg" role="group" aria-label="Permission mode switcher">
+      <button type="button" data-mode="paranoid">
+        <span><span class="mname">paranoid</span><br><span class="mdesc">read + talk only · no dispatch, no writes</span></span>
+        <span class="dir" data-dir></span>
+      </button>
+      <button type="button" data-mode="secretary" aria-pressed="true">
+        <span><span class="mname">secretary</span><br><span class="mdesc">default · every write confirmed by repeat-back</span></span>
+        <span class="dir" data-dir></span>
+      </button>
+      <button type="button" data-mode="trusted">
+        <span><span class="mname">trusted</span><br><span class="mdesc">read-only dispatch free · writes still confirmed</span></span>
+        <span class="dir" data-dir></span>
+      </button>
+    </div>
+    <div id="modeConfirm" hidden>
+      <p><b>Escalate to <span id="mcTo">trusted</span>?</b> Loosening permissions
+        needs this click — a spoken “switch to trusted” is always refused, so a
+        podcast can never escalate you.</p>
+      <div class="btnrow">
+        <button class="btn danger" id="mcYes" type="button">Escalate</button>
+        <button class="btn" id="mcNo" type="button">Cancel</button>
+      </div>
+    </div>
+    <div class="asym">
+      <span><b>↓ tighten</b> — instant, from any device, by voice too</span>
+      <span><b>↑ loosen</b> — this panel only, with confirmation</span>
+    </div>
+    <div class="modefoot">server-side · state/mode.json · synced to desk, phone, ipad · nothing in localStorage</div>
+  </section>
+
+  <!-- =========================== WORKERS =========================== -->
+  <section class="card" id="workersPanel" aria-label="Worker monitor">
+    <span class="micro">Workers</span>
+    <div id="workerList"></div>
+  </section>
+
+  <!-- =========================== DEVICES =========================== -->
+  <section class="card" id="devicesPanel" aria-label="Connected satellites">
+    <span class="micro">Satellites</span>
+    <div id="deviceList"></div>
+    <div class="devfoot">two devices can hear one wake word — highest score wins, not first to report</div>
+  </section>
+
+  <!-- ========================= ANNOUNCEMENTS ======================= -->
+  <section class="card" id="announcePanel" aria-label="Announcement queue">
+    <span class="micro">Announcements</span>
+    <div id="annList" aria-live="polite"></div>
+    <div class="annfoot">a finished worker waits for a turn boundary; announcements older than 1 h drop to the screen instead of being spoken</div>
+  </section>
+</div>
+
+  <!-- =========================== DEV PANEL ========================= -->
+  <section class="card devpanel" id="devPanel" aria-label="Mock controls">
+    <span class="micro">Mock controls — scaffolding, not product</span>
+    <div class="devrows">
+      <div class="devrow">
+        <span class="lbl">demo</span>
+        <button class="btn primary" id="btnDemo" type="button">Run demo</button>
+        <button class="btn" id="btnStop" type="button">Stop &amp; re-arm</button>
+      </div>
+      <div class="devrow">
+        <span class="lbl">jump to state</span>
+        <button class="btn jump" data-go="idle" type="button">idle</button>
+        <button class="btn jump" data-go="wake" type="button">wake fired</button>
+        <button class="btn jump" data-go="capture" type="button">capturing</button>
+        <button class="btn jump" data-go="endpoint" type="button">endpointing</button>
+        <button class="btn jump" data-go="reflex" type="button">thinking · reflex</button>
+        <button class="btn jump" data-go="converse" type="button">thinking · conversation</button>
+        <button class="btn jump" data-go="speak" type="button">speaking</button>
+        <button class="btn jump" data-go="clarify" type="button">clarify</button>
+        <button class="btn jump" data-go="confirm" type="button">confirming</button>
+      </div>
+      <div class="devrow">
+        <span class="lbl">confirm gate</span>
+        <button class="btn" id="btnYes" type="button">hear “yes”</button>
+        <button class="btn" id="btnNo" type="button">hear “no”</button>
+        <button class="btn" id="btnSilence" type="button">silence (timeout)</button>
+      </div>
+      <div class="devnote">manual jumps hold their state for review; the demo advances on its own. the confirming jump runs the real countdown — wait it out to watch silence cancel.</div>
+    </div>
+  </section>
+</main>
+
+<nav class="bnav" aria-label="Section navigation">
+  <button type="button" data-target="stagePanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/></svg>State</button>
+  <button type="button" data-target="transcriptPanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5h16M4 10h16M4 15h10"/></svg>Log</button>
+  <button type="button" data-target="workersPanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="4" width="16" height="7" rx="2"/><rect x="4" y="14" width="16" height="7" rx="2"/></svg>Work</button>
+  <button type="button" data-target="devicesPanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 18h2"/></svg>Devices</button>
+  <button type="button" data-target="devPanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 7l3 3-7 7H7v-3zM16 5l3 3"/></svg>Mock</button>
+</nav>
+
+<div id="toasts" aria-live="polite"></div>
+<span class="sr" id="srStatus" role="status" aria-live="polite"></span>
+
+<script>
+"use strict";
+/* ============================ helpers ================================= */
+const $ = (id) => document.getElementById(id);
+const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+function toast(msg) {
+  const d = document.createElement("div");
+  d.className = "toast"; d.textContent = msg;
+  $("toasts").appendChild(d);
+  setTimeout(() => d.remove(), 3600);
+}
+function fmtElapsed(ms) {
+  const s = Math.floor(ms / 1000);
+  return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+}
+
+/* ============================ theme =================================== */
+$("themeBtn").addEventListener("click", () => {
+  const h = document.documentElement;
+  h.dataset.theme = h.dataset.theme === "dark" ? "light" : "dark";
+  refreshPalette();
+});
+
+/* ======================= state machine ================================ */
+const STATE_META = {
+  idle:     { pill: "idle · wake-listening", name: "Listening for “hey butler”",
+              sub: "armed · mic stays local · nothing streams to the daemon", blk: "stgIdle" },
+  wake:     { pill: "wake fired", name: "Wake word",
+              sub: "local detector fired · arbitration window open", blk: "stgWake" },
+  capture:  { pill: "capturing", name: "Capturing",
+              sub: "streaming to the daemon · partials arriving live", blk: "stgCapture" },
+  endpoint: { pill: "endpointing", name: "Endpointing",
+              sub: "smart-turn deciding whether you finished", blk: "stgEndpoint" },
+  reflex:   { pill: "thinking · reflex", name: "Thinking — reflex",
+              sub: "local tier · sub-second verdict", blk: "stgThink" },
+  converse: { pill: "thinking · conversation", name: "Thinking — conversation",
+              sub: "cloud tier · streaming, spoken sentence by sentence", blk: "stgThink" },
+  speak:    { pill: "speaking", name: "Speaking",
+              sub: "bound to desk · wake word barges in", blk: "stgSpeak" },
+  clarify:  { pill: "clarify", name: "Clarifying",
+              sub: "one question back · mic reopened without a wake word", blk: "stgClarify" },
+  confirm:  { pill: "confirming", name: "Confirming a write",
+              sub: "spoken repeat-back gates the action · silence cancels", blk: "stgConfirm" },
+};
+const BLOCKS = ["stgIdle","stgWake","stgCapture","stgEndpoint","stgThink","stgSpeak","stgClarify","stgConfirm"];
+
+let thinkTimer = null, cdTimer = null, epToken = 0;
+
+function setState(st) {
+  const m = STATE_META[st];
+  document.body.dataset.state = st;
+  $("pillState").textContent = m.pill;
+  $("stateName").textContent = m.name;
+  $("stateSub").textContent = m.sub;
+  BLOCKS.forEach((b) => { $(b).hidden = ($(b).id !== m.blk); });
+  if (st !== "reflex" && st !== "converse") { clearInterval(thinkTimer); thinkTimer = null; }
+  if (st !== "confirm") { clearInterval(cdTimer); cdTimer = null; }
+  if (st !== "endpoint") epToken++;
+  sim.speech = (st === "capture");
+  $("srStatus").textContent = "Butler state: " + m.pill;
+}
+
+/* --- state entry helpers ---------------------------------------------- */
+function toIdle() { setState("idle"); }
+
+function wakeFire(score, arb) {
+  sim.spike = { t0: performance.now(), score };
+  $("wakeScoreBig").textContent = score.toFixed(2);
+  const a = arb || { desk: { score, won: true }, phone: { score: Math.max(0.5, score - 0.26), won: false } };
+  $("wakeWho").textContent =
+    "desk won arbitration · phone " + a.phone.score.toFixed(2) + " rejected (lost_arbitration)";
+  setArbitration(a);
+  setState("wake");
+}
+
+let firstPartialShown = false;
+function startCapture() {
+  firstPartialShown = false;
+  $("liveC").textContent = ""; $("liveT").textContent = "";
+  $("chipFirst").textContent = "first partial — ms";
+  setState("capture");
+}
+function showPartial(committed, tentative) {
+  if (document.body.dataset.state !== "capture") return;
+  $("liveC").textContent = committed;
+  $("liveT").textContent = tentative ? " " + tentative : "";
+  if (!firstPartialShown) { firstPartialShown = true; $("chipFirst").textContent = "first partial 202 ms"; }
+}
+
+function enterEndpoint(text, opts) {
+  $("epText").textContent = "“" + text + "”";
+  setEp(0.0, "silence 280 ms — first check");
+  setState("endpoint");
+  if (opts && opts.animate) {
+    const tok = ++epToken;
+    [[350, 0.31], [800, 0.44], [1250, 0.58], [1700, 0.71]].forEach(([dt, p]) => {
+      setTimeout(() => { if (tok === epToken) setEp(p, p >= 0.6 ? "≥ 0.60 → finalize" : "recheck in 450 ms"); }, dt);
+    });
+  }
+}
+function setEp(p, status) {
+  $("epFill").style.width = Math.round(p * 100) + "%";
+  $("epVal").textContent = "p = " + p.toFixed(2);
+  if (status) $("epStatus").textContent = status;
+}
+
+function enterThink(tier) {
+  const badge = $("thinkBadge");
+  badge.className = "tierbadge " + tier;
+  $("thinkBadgeTxt").textContent = tier === "reflex" ? "REFLEX · local · always warm" : "CONVERSATION · cloud · streaming";
+  $("thinkNote").textContent = tier === "reflex"
+    ? "strict-JSON verdict from the always-warm local model — answer, clarify, converse, dispatch, or steer"
+    : "streamed reply, sentence-split into the same TTS queue — the seam between tiers is inaudible";
+  const stream = $("thinkStream");
+  stream.className = tier === "converse" ? "on" : "";
+  stream.innerHTML = "";
+  const t0 = performance.now();
+  clearInterval(thinkTimer);
+  thinkTimer = setInterval(() => { $("thinkMs").textContent = Math.round(performance.now() - t0) + " ms"; }, RM ? 400 : 60);
+  $("thinkMs").textContent = "0 ms";
+  setState(tier);
+}
+function thinkStreamLine(txt) {
+  if (document.body.dataset.state !== "converse") return;
+  const d = document.createElement("div"); d.textContent = txt;
+  $("thinkStream").appendChild(d);
+}
+
+function enterSpeak(sentence, kind, who) {
+  $("speakLabel").textContent = kind === "announce" ? "Announcement — " + (who || "worker") : "Reply";
+  $("speakSentence").textContent = "“" + sentence + "”";
+  setState("speak");
+}
+function showSentence(s) { $("speakSentence").textContent = "“" + s + "”"; }
+
+function enterClarify(q) {
+  $("clarifyQ").textContent = q;
+  $("clarLive").textContent = "";
+  setState("clarify");
+}
+function clarifyHeard(t) { $("clarLive").textContent = "heard: “" + t + "”"; }
+
+/* --- confirm gate ------------------------------------------------------ */
+const CONFIRM_S = 8;
+let confirmDeadline = 0, confirmResolved = false;
+function enterConfirm(text) {
+  $("confirmText").textContent = "“" + text + "”";
+  $("confirmHeard").textContent = "";
+  confirmResolved = false;
+  confirmDeadline = performance.now() + CONFIRM_S * 1000;
+  setState("confirm");
+  clearInterval(cdTimer);
+  cdTimer = setInterval(() => {
+    const rem = Math.max(0, confirmDeadline - performance.now());
+    $("cdFill").style.width = (rem / (CONFIRM_S * 1000) * 100) + "%";
+    $("cdNum").textContent = (rem / 1000).toFixed(1);
+    if (rem <= 0 && !confirmResolved) confirmCancel("silence — nothing heard before the timeout");
+  }, RM ? 400 : 100);
+}
+function confirmHeard(ans) {
+  if (document.body.dataset.state !== "confirm" || confirmResolved) return;
+  $("confirmHeard").textContent = "heard: “" + ans + "”";
+}
+function confirmAccept(opts) {
+  if (document.body.dataset.state !== "confirm" || confirmResolved) return;
+  confirmResolved = true;
+  clearInterval(cdTimer); cdTimer = null;
+  if (!opts || opts.spawn !== false) spawnDemoWorker();
+  addButler("Dispatched claude on butler. I'll tell you when it's done.", "reflex");
+  enterSpeak("Dispatched claude on butler. I'll tell you when it's done.", "reply");
+  if (!demoActive()) setTimeout(() => { if (document.body.dataset.state === "speak") toIdle(); }, 2400);
+}
+function confirmCancel(reason) {
+  if (confirmResolved) return;
+  confirmResolved = true;
+  clearInterval(cdTimer); cdTimer = null;
+  $("confirmHeard").textContent = "cancelled — " + reason;
+  addButler("Cancelled — nothing was changed.", "reflex");
+  toast("Write cancelled (fail closed): " + reason);
+  setTimeout(() => { if (document.body.dataset.state === "confirm") toIdle(); }, 1400);
+}
+
+/* ====================== audio simulation ============================== */
+const N = 220;
+const micBuf = new Array(N).fill(0);
+const wakeBuf = new Array(N).fill(0.05);
+const outBuf = new Array(N).fill(0);
+const sim = { mic: 0.04, wakeBase: 0.06, out: 0, speech: false, spike: null,
+              miss: null, nextMiss: performance.now() + 6000 };
+
+function syll(t) {
+  return 0.14 + 0.36 * Math.abs(Math.sin(t / 95)) *
+         (0.55 + 0.45 * Math.abs(Math.sin(t / 460))) + Math.random() * 0.05;
+}
+function simTick() {
+  const t = performance.now();
+  /* mic */
+  const floor = 0.035 + 0.02 * Math.sin(t / 1700) + Math.random() * 0.012;
+  const target = sim.speech ? syll(t) : floor;
+  sim.mic += (target - sim.mic) * 0.55;
+  micBuf.push(clamp(sim.mic, 0, 1)); micBuf.shift();
+  /* wake score */
+  sim.wakeBase = clamp(sim.wakeBase + (Math.random() - 0.5) * 0.016, 0.02, 0.1);
+  let w = sim.wakeBase;
+  if (!sim.miss && t > sim.nextMiss && document.body.dataset.state === "idle") {
+    sim.miss = { t0: t, peak: 0.18 + Math.random() * 0.27, dur: 1200 + Math.random() * 700 };
+  }
+  if (sim.miss) {
+    const p = (t - sim.miss.t0) / sim.miss.dur;
+    if (p >= 1) { sim.miss = null; sim.nextMiss = t + 5000 + Math.random() * 9000; }
+    else w += sim.miss.peak * Math.sin(Math.PI * p);
+  }
+  if (sim.spike) {
+    const e = t - sim.spike.t0;
+    if (e < 250) w = Math.max(w, sim.spike.score * (e / 250));
+    else if (e < 2500) w = Math.max(w, sim.spike.score * Math.exp(-(e - 250) / 700));
+    else sim.spike = null;
+  }
+  wakeBuf.push(clamp(w, 0, 1)); wakeBuf.shift();
+  /* output */
+  const speaking = document.body.dataset.state === "speak";
+  sim.out += ((speaking ? syll(t + 4000) : 0) - sim.out) * 0.5;
+  outBuf.push(clamp(sim.out, 0, 1)); outBuf.shift();
+  /* readouts */
+  $("micDb").textContent = (sim.mic > 0.001 ? Math.round(20 * Math.log10(sim.mic)) : -60) + " dB";
+  $("wakeNow").textContent = wakeBuf[N - 1].toFixed(2);
+  $("outState").textContent = speaking ? "speaking" : "quiet";
+  drawAll();
+}
+
+/* ------------------------- canvas drawing ----------------------------- */
+let pal = {};
+function refreshPalette() {
+  const cs = getComputedStyle(document.documentElement);
+  pal = {
+    mic: cs.getPropertyValue("--viz-mic").trim(),
+    wake: cs.getPropertyValue("--viz-wake").trim(),
+    out: cs.getPropertyValue("--viz-out").trim(),
+    grid: cs.getPropertyValue("--viz-grid").trim(),
+    bad: cs.getPropertyValue("--bad").trim(),
+  };
+}
+function fit(c) {
+  const r = c.getBoundingClientRect();
+  const d = window.devicePixelRatio || 1;
+  if (r.width === 0) return;
+  c.width = Math.round(r.width * d); c.height = Math.round(c.clientHeight * d);
+}
+function fitAll() { ["cvMic", "cvWake", "cvOut"].forEach((id) => fit($(id))); }
+
+function drawBars(c, buf, color) {
+  const x = c.getContext("2d"), W = c.width, H = c.height;
+  x.clearRect(0, 0, W, H);
+  x.strokeStyle = pal.grid; x.lineWidth = 1;
+  x.beginPath(); x.moveTo(0, H / 2); x.lineTo(W, H / 2); x.stroke();
+  x.fillStyle = color;
+  const bw = W / N;
+  for (let i = 0; i < N; i++) {
+    const a = Math.max(1, buf[i] * H * 0.46);
+    x.fillRect(i * bw, H / 2 - a, Math.max(1, bw * 0.7), a * 2);
+  }
+}
+function drawWake(c) {
+  const x = c.getContext("2d"), W = c.width, H = c.height;
+  x.clearRect(0, 0, W, H);
+  const yThr = H * 0.5; /* score 0.5 of a 0..1 axis */
+  x.fillStyle = pal.grid; x.globalAlpha = 0.25;
+  x.fillRect(0, 0, W, yThr); x.globalAlpha = 1;
+  x.strokeStyle = pal.bad; x.setLineDash([5, 5]); x.lineWidth = 1;
+  x.beginPath(); x.moveTo(0, yThr); x.lineTo(W, yThr); x.stroke(); x.setLineDash([]);
+  x.strokeStyle = pal.wake; x.lineWidth = Math.max(1.5, (window.devicePixelRatio || 1) * 1.2);
+  x.beginPath();
+  for (let i = 0; i < N; i++) {
+    const px = i / (N - 1) * W, py = H - clamp(wakeBuf[i], 0, 1) * H;
+    if (i === 0) x.moveTo(px, py); else x.lineTo(px, py);
+  }
+  x.stroke();
+}
+function drawAll() {
+  drawBars($("cvMic"), micBuf, pal.mic);
+  drawWake($("cvWake"));
+  drawBars($("cvOut"), outBuf, pal.out);
+}
+
+/* ========================= transcript ================================= */
+function scrollLog() {
+  const l = $("logList");
+  l.scrollTop = l.scrollHeight;
+}
+function entry(cls, whoHtml, txt) {
+  const d = document.createElement("div");
+  d.className = "entry " + cls;
+  const w = document.createElement("div"); w.className = "who"; w.innerHTML = whoHtml;
+  const t = document.createElement("div"); t.className = "txt"; t.textContent = txt;
+  d.appendChild(w); d.appendChild(t);
+  $("logList").appendChild(d); scrollLog();
+  return d;
+}
+function addYou(text, tm) {
+  const chips = tm ? ` <span class="tchip">first partial ${tm.fp} ms · finalize ${tm.fin} ms</span>` : "";
+  entry("you", "You" + chips, text);
+}
+function addButler(text, tier) {
+  entry("butler", `Butler <span class="badge ${tier}">${tier}</span>`, text);
+}
+function addAnnounceT(text, who) {
+  entry("butler", `Butler <span class="badge announce">announce</span> <span class="tchip">${who || ""}</span>`, text);
+}
+function addScreenOnly(title, body, pointer) {
+  const d = document.createElement("div"); d.className = "entry butler";
+  d.innerHTML = `<div class="who">Butler <span class="ptr">screen-only</span>
+      <span class="tchip">spoken pointer: “${pointer}”</span></div>`;
+  const det = document.createElement("details"); det.className = "screenonly";
+  const sum = document.createElement("summary"); sum.textContent = title + " — tap to expand";
+  const pre = document.createElement("pre"); pre.textContent = body;
+  det.appendChild(sum); det.appendChild(pre); d.appendChild(det);
+  $("logList").appendChild(d); scrollLog();
+}
+
+/* =========================== workers ================================== */
+const workerRefs = [];
+function makeWorker(w) {
+  const card = document.createElement("div");
+  card.className = "wcard " + w.status;
+  card.innerHTML = `
+    <div class="wtop">
+      <span class="wharness">${w.harness}</span>
+      <span class="wtask" style="margin-top:0">${w.task}</span>
+      <span class="wstatus"><span class="wdot" aria-hidden="true"></span><span class="wstxt"></span></span>
+    </div>
+    <div class="wmeta"></div>`;
+  const meta = card.querySelector(".wmeta");
+  const stxt = card.querySelector(".wstxt");
+  const ref = { w, card, meta, stxt, logEl: null, started: w.started || null };
+
+  if (w.status === "queued") {
+    stxt.textContent = "QUEUED";
+    meta.textContent = w.note || "waiting for a slot";
+  } else {
+    const log = document.createElement("ul"); log.className = "wlog";
+    (w.lines || []).forEach((l) => {
+      const li = document.createElement("li"); li.textContent = l; log.appendChild(li);
+    });
+    card.appendChild(log); ref.logEl = log;
+    if (w.status === "running") {
+      stxt.textContent = "RUNNING";
+      meta.textContent = "elapsed 0:00 · mode at dispatch: secretary · stream-json";
+      const row = document.createElement("div"); row.className = "steerrow";
+      const inp = document.createElement("input");
+      inp.type = "text"; inp.placeholder = "steer this worker by text…";
+      inp.setAttribute("aria-label", "Steering instruction for " + w.harness + " worker");
+      const btn = document.createElement("button"); btn.className = "btn"; btn.textContent = "Steer";
+      const send = () => {
+        const v = inp.value.trim(); if (!v) return;
+        workerLine(ref, "steer → " + v + "  (one user-message line on stdin, no restart)", "steer");
+        inp.value = ""; toast("Steering line written to " + w.harness + " stdin");
+      };
+      btn.addEventListener("click", send);
+      inp.addEventListener("keydown", (e) => { if (e.key === "Enter") send(); });
+      row.appendChild(inp); row.appendChild(btn); card.appendChild(row);
+      ref.steerRow = row;
+    } else { /* done */
+      stxt.textContent = "DONE";
+      meta.textContent = w.doneMeta || "";
+      if (w.summary) {
+        const s = document.createElement("div"); s.className = "wsummary";
+        s.innerHTML = "<b>" + w.summary + "</b> · full output in the transcript";
+        card.appendChild(s);
+      }
+    }
+  }
+  $("workerList").appendChild(card);
+  workerRefs.push(ref);
+  return ref;
+}
+function workerLine(ref, text, cls) {
+  if (!ref.logEl) return;
+  const li = document.createElement("li"); li.textContent = text;
+  if (cls) li.className = cls;
+  ref.logEl.appendChild(li);
+  ref.logEl.scrollTop = ref.logEl.scrollHeight;
+}
+function completeWorker(ref, summary) {
+  ref.card.classList.remove("running"); ref.card.classList.add("done");
+  ref.stxt.textContent = "DONE";
+  const el = ref.started ? fmtElapsed(performance.now() - ref.started) : "";
+  ref.meta.textContent = "ran " + el + " · stdin closed after idle grace · exit 0";
+  ref.started = null;
+  if (ref.steerRow) ref.steerRow.remove();
+  workerLine(ref, "Stop hook → idle grace 10 s → stdin closed → exit 0", "doneline");
+  if (summary) {
+    const s = document.createElement("div"); s.className = "wsummary";
+    s.innerHTML = "<b>" + summary + "</b> · full output in the transcript";
+    ref.card.appendChild(s);
+  }
+}
+setInterval(() => {
+  const t = performance.now();
+  workerRefs.forEach((r) => {
+    if (r.started && r.card.classList.contains("running")) {
+      r.meta.textContent = "elapsed " + fmtElapsed(t - r.started) +
+        " · mode at dispatch: secretary · stream-json";
+    }
+  });
+}, 1000);
+
+let demoWorkerRef = null;
+function spawnDemoWorker() {
+  if (demoWorkerRef) return demoWorkerRef;
+  demoWorkerRef = makeWorker({
+    harness: "claude", status: "running", started: performance.now(),
+    task: "add retry logic to the fetch in butler + run tests",
+    lines: ["spawned · claude -p --input-format stream-json --output-format stream-json"],
+  });
+  $("workerList").prepend(demoWorkerRef.card);
+  toast("Worker spawned: claude (mode frozen at dispatch: secretary)");
+  return demoWorkerRef;
+}
+
+/* =========================== devices ================================== */
+const deviceRefs = {};
+function makeDevice(d) {
+  const row = document.createElement("div"); row.className = "drow";
+  row.innerHTML = `
+    <span class="ddot" aria-hidden="true"></span>
+    <span><span class="dname">${d.name}</span><br><span class="dagent">${d.agent}</span></span>
+    <span class="dscore"><span class="sval"></span><br><span class="snote"></span></span>`;
+  $("deviceList").appendChild(row);
+  deviceRefs[d.name] = { row, sval: row.querySelector(".sval"), snote: row.querySelector(".snote") };
+  setDevice(d.name, d.score, d.note, d.cls);
+}
+function setDevice(name, score, note, cls) {
+  const r = deviceRefs[name]; if (!r) return;
+  r.sval.textContent = score != null ? score.toFixed(2) : "—";
+  r.snote.textContent = note || "";
+  r.row.className = "drow" + (cls ? " " + cls : "");
+}
+function setArbitration(a) {
+  setDevice("desk", a.desk.score, a.desk.won ? "won · turn bound here" : "lost", a.desk.won ? "won" : "lost");
+  setDevice("phone", a.phone.score, a.phone.won ? "won" : "rejected · lost_arbitration", a.phone.won ? "won" : "lost");
+  setDevice("ipad", null, "armed · no candidate", "");
+}
+
+/* ========================= announcements ============================== */
+function makeAnn(text, status, detail) {
+  const d = document.createElement("div"); d.className = "ann " + status;
+  d.innerHTML = `<div class="atxt">${text}</div><div class="astat"></div>`;
+  const ref = { el: d, stat: d.querySelector(".astat") };
+  setAnn(ref, status, detail);
+  $("annList").prepend(d);
+  return ref;
+}
+function setAnn(ref, status, detail) {
+  ref.el.className = "ann " + status;
+  ref.stat.textContent = { queued: "queued — waiting for turn boundary (speak_end)",
+    playing: "playing now", delivered: "delivered", dropped: "dropped to screen — stale (>1 h)" }[status]
+    + (detail ? " · " + detail : "");
+}
+
+/* =========================== mode store =============================== */
+const MODES = ["paranoid", "secretary", "trusted"];
+let mode = "secretary", pendingMode = null;
+function renderMode() {
+  const cur = MODES.indexOf(mode);
+  $("modeSeg").querySelectorAll("button").forEach((b) => {
+    const m = b.dataset.mode, i = MODES.indexOf(m);
+    b.setAttribute("aria-pressed", String(m === mode));
+    b.classList.toggle("up", i > cur);
+    b.querySelector("[data-dir]").textContent =
+      m === mode ? "current" : (i > cur ? "↑ confirm" : "↓ instant");
+  });
+  $("modeChipVal").textContent = mode;
+}
+$("modeSeg").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-mode]"); if (!b) return;
+  const m = b.dataset.mode;
+  if (m === mode) return;
+  if (MODES.indexOf(m) < MODES.indexOf(mode)) {          /* tighten: instant */
+    mode = m; pendingMode = null; $("modeConfirm").hidden = true; renderMode();
+    toast("Mode ↓ " + m + " — instant, broadcast to 3 satellites");
+  } else {                                                /* loosen: confirm */
+    pendingMode = m; $("mcTo").textContent = m; $("modeConfirm").hidden = false;
+    $("mcYes").focus();
+  }
+});
+$("mcYes").addEventListener("click", () => {
+  if (!pendingMode) return;
+  mode = pendingMode; pendingMode = null; $("modeConfirm").hidden = true; renderMode();
+  toast("Mode ↑ " + mode + " — escalated via UI click, broadcast to 3 satellites");
+});
+$("mcNo").addEventListener("click", () => { pendingMode = null; $("modeConfirm").hidden = true; });
+$("modeChip").addEventListener("click", () => $("modePanel").scrollIntoView({ behavior: RM ? "auto" : "smooth" }));
+
+/* ============================ demo ==================================== */
+let demoToken = 0;
+function demoActive() { return demoRunning; }
+let demoRunning = false;
+
+function partialFrames(text) {
+  const w = text.split(" "), frames = [];
+  for (let k = 2; k <= w.length; k += 2) {
+    frames.push([w.slice(0, Math.max(0, k - 2)).join(" "), w.slice(Math.max(0, k - 2), k).join(" ")]);
+  }
+  frames.push([text, ""]);
+  return frames;
+}
+function pushPartials(steps, text, ms) {
+  partialFrames(text).forEach((f) => steps.push([ms, () => showPartial(f[0], f[1])]));
+}
+function pushEndpoint(steps, text, ps) {
+  steps.push([320, () => enterEndpoint(text)]);
+  ps.forEach((p) => steps.push([450, () => setEp(p, p >= 0.6 ? "≥ 0.60 → finalize" : "recheck in 450 ms")]));
+}
+
+const UTT_A = "what is the status of the butler tests";
+const UTT_B = "have claude add retry logic to the fetch in butler and run the tests";
+const UTT_C = "should butler use a message bus or direct calls between its components";
+const REPLY_A = "All twelve tests passed on the last run, four minutes ago.";
+const REPEAT_B = "You want me to have claude add retry logic to the fetch in project butler and run the tests — yes or no?";
+const C1 = "For one process on one machine, direct calls stay simpler and easier to trace.";
+const C2 = "A bus only starts paying rent when a second consumer appears.";
+const C3 = "The longer version, with the trade-offs, is on your screen.";
+const ANN_TXT = "The butler retry job is done — twelve tests passed.";
+const LONG_C = `Direct calls vs message bus — the longer answer
+
+1. One daemon owns policy (plan 4.1); a bus adds a second place
+   where ordering lives, and ordering bugs are the expensive kind.
+2. Every consumer today is in-process; serialization would be
+   pure overhead on the turn path (AC-4 budget is 1500 ms).
+3. The Source protocol already isolates satellites from the
+   pipeline; that seam gives most of the decoupling a bus would.
+4. Revisit only if a second PROCESS needs turn events; the
+   workers' events.jsonl is already the durable feed for that.`;
+
+function runDemo() {
+  stopDemo(false);
+  demoRunning = true;
+  const tok = ++demoToken;
+  const steps = [];
+  const at = (dt, fn) => steps.push([dt, fn]);
+
+  /* ---- turn 1: reflex answer ---- */
+  at(0, () => { toast("Demo — four turns, about 60 s. Watch the lamp."); toIdle(); });
+  at(1500, () => wakeFire(0.87));
+  at(700, () => startCapture());
+  pushPartials(steps, UTT_A, 290);
+  pushEndpoint(steps, UTT_A, [0.31, 0.44, 0.58, 0.71]);
+  at(300, () => { addYou(UTT_A, { fp: 202, fin: 148 }); enterThink("reflex"); });
+  at(430, () => { addButler(REPLY_A, "reflex"); enterSpeak(REPLY_A, "reply"); });
+  at(2600, () => toIdle());
+
+  /* ---- turn 2: dispatch, confirm gate, worker spawn ---- */
+  at(1400, () => wakeFire(0.91));
+  at(650, () => startCapture());
+  pushPartials(steps, UTT_B, 300);
+  pushEndpoint(steps, UTT_B, [0.28, 0.47, 0.66]);
+  at(300, () => { addYou(UTT_B, { fp: 198, fin: 151 }); enterThink("reflex"); });
+  at(380, () => { addButler(REPEAT_B, "reflex"); enterConfirm(REPEAT_B); });
+  at(2600, () => confirmHeard("yes"));
+  at(500, () => confirmAccept());
+  at(2400, () => { toIdle(); if (demoWorkerRef) workerLine(demoWorkerRef, "reading fetch.py"); });
+
+  /* ---- turn 3: conversation tier + worker completes mid-speech ---- */
+  at(900, () => { if (demoWorkerRef) workerLine(demoWorkerRef, "editing fetch.py — retry with backoff"); });
+  at(900, () => wakeFire(0.84));
+  at(650, () => startCapture());
+  pushPartials(steps, UTT_C, 300);
+  pushEndpoint(steps, UTT_C, [0.33, 0.52, 0.68]);
+  at(300, () => { addYou(UTT_C, { fp: 205, fin: 150 }); enterThink("converse");
+                  if (demoWorkerRef) workerLine(demoWorkerRef, "running tests"); });
+  at(500, () => thinkStreamLine("token stream · “For one process on one machine, direct…”"));
+  at(700, () => thinkStreamLine("sentence 1 complete → TTS queue"));
+  at(700, () => thinkStreamLine("sentence 2 forming…"));
+  at(600, () => { addButler(C1 + " " + C2 + " " + C3, "converse"); enterSpeak(C1, "reply"); });
+  at(2300, () => showSentence(C2));
+  at(1100, () => { /* worker finishes while Butler is speaking */
+    if (demoWorkerRef) { workerLine(demoWorkerRef, "12 passed, 0 failed"); completeWorker(demoWorkerRef, "retry added · 12 tests passed"); }
+    demoAnn = makeAnn(ANN_TXT, "queued", "worker: claude");
+    toast("Worker finished mid-speech — announcement queued, not preempting");
+  });
+  at(1200, () => { showSentence(C3); addScreenOnly("Conversation answer (long form)", LONG_C, "the longer version is on your screen"); });
+  at(2300, () => { /* speak_end → announcement plays */
+    if (demoAnn) setAnn(demoAnn, "playing", "worker: claude");
+    enterSpeak(ANN_TXT, "announce", "claude");
+  });
+  at(2400, () => {
+    if (demoAnn) setAnn(demoAnn, "delivered", "after turn boundary");
+    addAnnounceT(ANN_TXT, "worker: claude");
+    toIdle();
+  });
+
+  /* ---- turn 4: clarify ---- */
+  at(1500, () => wakeFire(0.86));
+  at(650, () => startCapture());
+  pushPartials(steps, "run the tests", 300);
+  pushEndpoint(steps, "run the tests", [0.36, 0.63]);
+  at(300, () => { addYou("run the tests", { fp: 201, fin: 149 }); enterThink("reflex"); });
+  at(400, () => { addButler("Which project — butler or the site?", "clarify"); enterClarify("Which project — butler or the site?"); });
+  at(1900, () => clarifyHeard("butler"));
+  at(900, () => { addYou("butler"); enterThink("reflex"); });
+  at(420, () => { addButler("Running the butler tests now.", "reflex"); enterSpeak("Running the butler tests now.", "reply"); });
+  at(2300, () => { toIdle(); demoRunning = false; toast("Demo complete — every state visited. Jump buttons re-open any of them."); });
+
+  let t = 0;
+  steps.forEach(([dt, fn]) => {
+    t += dt;
+    setTimeout(() => { if (tok === demoToken) fn(); }, t);
+  });
+}
+let demoAnn = null;
+function stopDemo(rearm) {
+  demoToken++; demoRunning = false;
+  clearInterval(cdTimer); cdTimer = null;
+  if (rearm !== false) { toIdle(); toast("Stopped — re-armed to wake-listening (every terminal path re-arms)"); }
+}
+
+/* ======================= dev panel wiring ============================= */
+$("btnDemo").addEventListener("click", runDemo);
+$("btnStop").addEventListener("click", () => stopDemo(true));
+document.querySelectorAll(".jump").forEach((b) => {
+  b.addEventListener("click", () => {
+    stopDemo(false);
+    const g = b.dataset.go;
+    if (g === "idle") toIdle();
+    else if (g === "wake") wakeFire(0.87);
+    else if (g === "capture") { startCapture(); showPartial("what is the status of", "the butler"); }
+    else if (g === "endpoint") enterEndpoint(UTT_A, { animate: true });
+    else if (g === "reflex") enterThink("reflex");
+    else if (g === "converse") {
+      enterThink("converse");
+      const tok = demoToken;
+      [[500, "token stream · “For one process on one machine…”"],
+       [1200, "sentence 1 complete → TTS queue"],
+       [1900, "sentence 2 forming…"]].forEach(([dt, l]) =>
+        setTimeout(() => { if (tok === demoToken) thinkStreamLine(l); }, dt));
+    }
+    else if (g === "speak") enterSpeak(REPLY_A, "reply");
+    else if (g === "clarify") enterClarify("Which project — butler or the site?");
+    else if (g === "confirm") enterConfirm(REPEAT_B);
+  });
+});
+$("btnYes").addEventListener("click", () => {
+  if (document.body.dataset.state !== "confirm") { toast("Not in the confirming state — jump there first"); return; }
+  confirmHeard("yes"); setTimeout(() => confirmAccept(), 400);
+});
+$("btnNo").addEventListener("click", () => {
+  if (document.body.dataset.state !== "confirm") { toast("Not in the confirming state — jump there first"); return; }
+  confirmHeard("no"); setTimeout(() => confirmCancel("a clear “no”"), 400);
+});
+$("btnSilence").addEventListener("click", () => {
+  if (document.body.dataset.state !== "confirm") { toast("Not in the confirming state — jump there first"); return; }
+  confirmDeadline = performance.now();
+});
+
+/* bottom nav */
+document.querySelectorAll("nav.bnav button").forEach((b) => {
+  b.addEventListener("click", () =>
+    $(b.dataset.target).scrollIntoView({ behavior: RM ? "auto" : "smooth", block: "start" }));
+});
+
+/* ============================ seed data =============================== */
+function seed() {
+  /* devices */
+  makeDevice({ name: "desk", agent: "Chrome · Windows", score: 0.87, note: "won · turn bound here", cls: "won" });
+  makeDevice({ name: "phone", agent: "Brave · iOS", score: 0.61, note: "rejected · lost_arbitration", cls: "lost" });
+  makeDevice({ name: "ipad", agent: "Safari · iPadOS", score: null, note: "armed · near-miss 0.44, 12 m ago" });
+
+  /* workers: one running, one just-completed, one queued */
+  const running = makeWorker({
+    harness: "claude", status: "running", started: performance.now() - 7 * 60 * 1000 - 12000,
+    task: "port endpointing server-side (plan 4.2)",
+    lines: ["reading web/app.js", "writing daemon/pipeline.py — energy VAD",
+            "running pytest test/ -x", "editing pipeline.py — EOU policy constants"],
+  });
+  workerLine(running, "running pytest test/ -x  (second pass)");
+  makeWorker({
+    harness: "pi", status: "done",
+    task: "summarize overnight logs",
+    doneMeta: "ran 3:41 · finished 4 m ago · exit 0",
+    lines: ["reading logs/butlerd-2026-08-15.log", "reading logs/kokoro.log", "writing summary"],
+    summary: "no errors overnight · RSS flat",
+  });
+  makeWorker({
+    harness: "codex", status: "queued",
+    task: "bump deps + changelog",
+    note: "queued — waiting for the claude slot · will confirm before writes",
+  });
+
+  /* announcements */
+  const a1 = makeAnn("Nightly backup finished.", "dropped", "finished 2 h 10 m ago");
+  const a2 = makeAnn("The pi log summary is done.", "delivered", "4 m ago, at wake-listening (seam cues)");
+  void a1; void a2;
+
+  /* transcript */
+  addYou("what time is it", { fp: 199, fin: 146 });
+  addButler("It's 9:41.", "reflex");
+  addYou("have pi summarize the overnight logs", { fp: 204, fin: 152 });
+  addButler("You want pi to summarize last night's logs — yes or no?", "reflex");
+  addYou("yes");
+  addButler("Dispatched pi on the log summary.", "reflex");
+  addAnnounceT("The pi log summary is done.", "worker: pi");
+  addScreenOnly("pi log summary (14 lines)",
+`overnight 2026-08-15 → 08-16
+- butlerd: 0 errors, 0 restarts; RSS 212 MB → 219 MB (flat)
+- kokoro sidecar: 41 sentences synthesized, p50 380 ms
+- smart-turn child: 96 checks, p50 33 ms
+- wake: 3 near-misses (0.31, 0.38, 0.44), 0 false fires
+- longest turn: 9.8 s (hard cap never hit)`,
+    "the summary is on your screen");
+
+  renderMode();
+  refreshPalette();
+  fitAll();
+  toIdle();
+}
+
+window.addEventListener("resize", () => { fitAll(); });
+seed();
+/* animation loop: reduced motion means discrete updates, not dead panels */
+setInterval(simTick, RM ? 600 : 50);
+</script>
+</body>
+</html>

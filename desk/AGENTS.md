@@ -1,0 +1,162 @@
+# Desk agent
+
+## Purpose
+
+- One Windows process that owns everything the daemon must not: the global
+  keyboard hook, the desk microphone, the clipboard, `SendInput` and the cue
+  beeps. It draws NO user interface.
+- It owns NO model. The recognizer stays in the daemon and this process
+  reaches it over HTTP, so there is one warm recognizer on the machine.
+- Specs: `docs/desk-hotkeys.md` (AC-113..AC-123), `docs/shortcuts.md`
+  (AC-133..AC-151), `docs/desk-audio.md` (AC-124..AC-132, AC-819..AC-823).
+
+## Ownership
+
+- Governs: `desk/*.py` -- the agent process and anything it needs to talk to
+  Windows.
+- Parent owns: the `POST /api/dictate` and `POST /api/terminal` routes, the ASR
+  gate and the settings schema (`daemon/AGENTS.md`), and the supervisor that
+  spawns this process (`daemon/desk.py`).
+
+## Local Contracts
+
+### Process shape
+
+- Keep this a SEPARATE PROCESS; never move it into the daemon. A low-level hook
+  needs its own message pump and capture blocks; the daemon's event loop may
+  not block.
+- Hold no model. Whole-clip decoding is `POST /api/dictate`, gated against the
+  live turn (AC-116); a second decode on one model returns empty transcripts.
+- Keep `desk/__init__.py` and keep it EMPTY of behaviour. Without it `desk/` is
+  a namespace package and `daemon/desk.py` wins the name `desk`, so the daemon
+  fails to boot (`docs/shortcuts.md` 6.1); a side effect there runs in the
+  daemon too.
+- Never decide when to die: no exit condition, no parent watch. The daemon's
+  Job Object ends this process (AC-122, AC-36, D-24).
+- `desk.pid()` names the uv launcher, not the hook process; walk the tree.
+- Three modules, three threads, one decider: `hotkeys.Hook` classifies,
+  suppresses and enqueues only; `audio.Microphone` fills its ring on
+  PortAudio's thread; `deskd.Agent` owns `stage` and decides everything.
+
+### Talking to the daemon
+
+- POLL settings (`GET /api/settings`, every `POLL_SECONDS`), never hold them.
+  Read values plus the top-level `bindings` key only; never learn the schema
+  (AC-41); never read the records' `settings.json` or `shortcuts.json`.
+- Treat a MISSING `bindings` key as a refusal, never as "clear everything".
+- A refused connection is normal, never fatal (D-1); log it on TRANSITION only.
+- `Daemon._post` is the ONE request shape: a transport failure becomes status
+  `0` and it never raises, or the stage machine wedges.
+- TLS verification is off for the loopback URL on purpose (self-signed cert).
+
+### The hook
+
+- NEVER print, log or take a lock in a hook callback. A console write blocks
+  forever under quick-edit selection and Windows silently removes a hook whose
+  thread stops pumping (`LowLevelHooksTimeout`).
+- The hot path is two O(1) membership tests then the `GetAsyncKeyState`
+  modifier reads; add nothing above the first test. Keep `vk not in held` --
+  a key rebound away while held still owes its key-up (D-1).
+- Publish `hotkeys.Table` by a SINGLE attribute store, no lock; `_callback`
+  reads it once into a local.
+- The DOWN resolves and the UP REPLAYS it (`Hook._held`, pure seam
+  `hotkeys.classify`). Suppression must stay symmetric: a passed-through DOWN
+  leaves no entry, so its UP passes through.
+- A SUPPRESSED key cannot be polled: `GetAsyncKeyState` reads it as UP while
+  held. Recover a lost key-up with a TIMEOUT (`Agent.check_stuck`, past
+  `dictate_max_seconds` plus slack), never a poll (AC-145). Gate:
+  `test_the_stuck_net_NEVER_asks_whether_a_key_is_down`.
+- Check the input desktop BEFORE installing the hook or opening the mic
+  (`hotkeys.input_desktop_reachable()`); a hook on a session without the input
+  desktop succeeds and receives nothing. Say it once per transition.
+- Every injected keystroke carries `hotkeys.MARK`; the hook passes marked keys
+  through (`paste._send(..., mark=0)` is for probes simulating a finger).
+
+### The binding table
+
+- `desk/actions.py` is the ONE key table (imports nothing Win32, so the daemon
+  shares it). `KEYS` is the allow-list; no modifier VK has an entry.
+- `ACTIONS` is CLOSED: `dictate` (hold) and `terminal` (once). A new action is
+  a method plus a line in `Agent._ACTIONS` plus an entry in `actions.ACTIONS`,
+  never a config file that can name a command or carry a command line.
+- Bare-safe keys only: `numpad_multiply`, `numpad_divide`, F13-F24, Pause,
+  Scroll Lock. Numpad digits and `+`/`-` are NOT bare-safe.
+- Never add `numpad_enter` (its VK is VK_RETURN) or any media/launch key
+  (0xA6-0xB7 arrive as `WM_APPCOMMAND`, never as keystrokes). The mail key
+  route is `scripts/bind-mail-key.py` (`docs/shortcuts.md` 10).
+- Validate at BIND TIME in `Table.__init__`, the only door (no
+  `add_binding`, only `set_table`): refuse bare non-safe, unknown key, unknown
+  action, duplicated chord (AC-138).
+- An invalid or EMPTY table changes nothing (AC-140); say why once per message.
+- A binding change runs `_apply_bindings` (first) and never `_start`/`_stop`.
+- The install log line is GENERATED by `Table.describe()` (AC-142).
+
+### Capture and delivery
+
+- `audio.Microphone.holds_open` (`dictate_preroll_ms` > 0) is the ONE place
+  that decides who owns the device. At 0 (default) arming hotkeys opens no
+  stream: a press opens it and EVERY ending path closes it -- key-up, stuck-key
+  recovery, the ceiling (released when reached, key still held), hotkeys off, a
+  failed open, a `stop()` that raises (AC-819, AC-820). Above 0 the stream stays
+  open while hotkeys are on and key-down indexes the lookback ring. Why: a
+  microphone held over Remote Desktop stalls the RDP audio channel for every
+  app and never recovers.
+- A stream that will not open at the press is logged, cues failure, returns to
+  IDLE, posts and pastes nothing; the next press retries (AC-821).
+- A cue is BLOCKING; the capture cue plays once the device is open, after
+  `begin`. Off Windows it is a no-op.
+- Detect a DEAF stream (AC-126..AC-128): `_begin` reopens a HELD-OPEN stream
+  when `Microphone.silent_for()` exceeds `STREAM_DEAD_S`; `_deliver` refuses a
+  capture with `live_blocks == 0` after a hold >= `MIN_HOLD_MS`, names the
+  device and cues failure. It reopens only a held-open stream; per press the
+  next press opens fresh (AC-823). That check runs BEFORE the mistouch check
+  and before the POST; the separator from a mistouch is hold duration, not
+  byte count.
+- A failure writes NOTHING -- no clipboard, no keystroke (AC-115). Every
+  refusal (409, 413, 422, 502, transport 0) logs a findable line and plays a
+  distinct cue. `_finish` returns the stage to IDLE in a `finally`.
+- The agent keys its auto-repeat latch on the KEY (`Agent._held`) and owns
+  `_capturing_vk`; both are cleared in `_stop`.
+
+### Drawing and terminals
+
+- DRAW NOTHING: no window, dialog, picker or tray icon (owner's ruling; root
+  `AGENTS.md`). Anything drawn takes the foreground (AC-114) and a modal stops
+  the poll thread.
+- `desk/browse.py` is a short-lived child of the DAEMON; nothing here imports,
+  spawns or waits on it (`docs/shortcuts.md` D6, AC-143).
+- The terminal action ASKS the daemon (`POST /api/terminal`) with the cwd and
+  agent its BINDING carries; it never spawns, reads no setting, picks no
+  default (AC-136, AC-119). A terminal spawned here would die with the Job
+  Object. It runs in PROCESSING under `_finish`'s `finally` and cues
+  `CUE_FAILED` on any failure.
+
+## Work Guidance
+
+- Read `docs/desk-hotkeys.md` and `docs/shortcuts.md` before adding an action.
+- No unicode in code or console output (Windows).
+- New behaviour starts as a failing test in `test/test_desk.py` (process and
+  lifetime), `test/test_desk_dictation.py` (ring, state machine, refusals) or
+  `test/test_desk_hotkeys.py` (key table, chord parser, `classify`).
+- Anything that presses a key or writes the clipboard belongs in
+  `test/manual/probe_dictation.py` or `test/manual/probe_bindings.py`, must
+  suppress its own injection, must check the foreground window's TITLE before
+  injecting, and must restore the operator's clipboard.
+
+## Verification
+
+```
+.venv\Scripts\python.exe -X utf8 -m pytest test\test_desk.py ^
+    test\test_desk_dictation.py test\test_desk_hotkeys.py -q
+.venv\Scripts\python.exe -X utf8 desk\deskd.py --check
+.venv\Scripts\python.exe -X utf8 test\manual\mutate_bindings.py
+```
+
+`test/manual/probe_bindings.py` is the only proof that suppression is
+SELECTIVE (a bound chord swallowed, the same key bare still types). It injects
+into a named scratch file on the operator's desktop: run it by hand, after
+checking the foreground window's title.
+
+## Child DOX Index
+
+No child AGENTS.md yet.

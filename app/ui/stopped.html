@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Butler</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="pg left">
+  <h1>Butler stopped</h1>
+  <p class="note" id="note-wrap" hidden><span id="note"></span></p>
+  <div id="launcher-output-wrap" hidden>
+    <p>Butler's launcher said:</p>
+    <pre class="cmd" id="launcher-output"></pre>
+  </div>
+  <p>Butler exited. The last lines of its log, <span class="mono" id="log-path"></span>:</p>
+  <pre class="logtail" id="log-tail" role="region" aria-label="Last 20 lines of butler.log"></pre>
+  <div class="actions"><button class="btn primary" id="restart" type="button">Restart Butler</button></div>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

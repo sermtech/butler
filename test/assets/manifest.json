@@ -1,0 +1,64 @@
+{
+  "generated_by": "scripts/make-fixtures.mjs",
+  "tts": {
+    "engine": "kokoro-js via daemon/engines/tts/tts-service.js",
+    "voice": "af_heart",
+    "native_rate": 24000
+  },
+  "resample": "24000 -> 16000, windowed-sinc (Blackman, 32-sample half-width, cutoff 8 kHz)",
+  "format": {
+    "sample_rate": 16000,
+    "channels": 1,
+    "bits_per_sample": 16,
+    "encoding": "PCM16 LE"
+  },
+  "asr_observed_note": "asr_observed_parakeet is what daemon/engines/stt_engine.py (parakeet-unified-en-0.6b, backend auto, latency low) actually returned on 2026-08-16. It differs from transcript in casing/punctuation and a couple of function words; normalise before asserting equality against transcript.",
+  "fixtures": [
+    {
+      "filename": "short_question.wav",
+      "transcript": "What time is it",
+      "sample_rate": 16000,
+      "num_samples": 17280,
+      "duration_ms": 1080,
+      "asr_observed_parakeet": "What time is it"
+    },
+    {
+      "filename": "wake_then_command.wav",
+      "transcript": "Hey Jarvis delete the old logs in project butler",
+      "sample_rate": 16000,
+      "num_samples": 52640,
+      "duration_ms": 3290,
+      "wake_end_sample": 15040,
+      "command_start_sample": 17440,
+      "wake_transcript": "Hey Jarvis",
+      "command_transcript": "delete the old logs in project butler",
+      "gap_ms": 150,
+      "lead_pad_ms": 100,
+      "asr_observed_parakeet": "Hey Jarvis, delete the old logs in Project Butler"
+    },
+    {
+      "filename": "silence_2s.wav",
+      "transcript": "",
+      "sample_rate": 16000,
+      "num_samples": 32000,
+      "duration_ms": 2000,
+      "asr_observed_parakeet": ""
+    },
+    {
+      "filename": "long_utterance.wav",
+      "transcript": "Talk me through whether Butler should use a message bus or direct calls between its components",
+      "sample_rate": 16000,
+      "num_samples": 83040,
+      "duration_ms": 5190,
+      "asr_observed_parakeet": "Talk me through whether Butler should use a message bus or a direct calls between its components"
+    },
+    {
+      "filename": "two_sentences.wav",
+      "transcript": "The tests are passing. I pushed the branch.",
+      "sample_rate": 16000,
+      "num_samples": 48800,
+      "duration_ms": 3050,
+      "asr_observed_parakeet": "The tests are passing. I push the branch"
+    }
+  ]
+}
