@@ -1,6 +1,6 @@
 # Butler history
 
-This repository was squashed for publication. The private development history had 425 commits, from 2026-08-16 to 2026-10-30, adding 319532 lines and removing 47276 (sum of per-commit insertions and deletions). Roughly 378 distinct acceptance criteria (AC-n identifiers) appear in plan.md. The dates and subjects below are the only part of that history kept; author names and emails are not included.
+This repository was squashed for publication. The private development history had 427 commits, from 2026-08-16 to 2026-10-30, adding 319557 lines and removing 47293 (sum of per-commit insertions and deletions). Roughly 378 distinct acceptance criteria (AC-n identifiers) appear in plan.md. The dates and subjects below are the only part of that history kept; author names and emails are not included.
 
 ## Commits (oldest first)
 
@@ -429,3 +429,5 @@ This repository was squashed for publication. The private development history ha
 - 2026-10-30  fix(whatsapp): a stranger's username no longer counts as a saved contact (rc14)
 - 2026-10-30  feat(install): one-command installer with a --check mode, and INSTALL.md for agents
 - 2026-10-30  docs(readme): a GitHub front page -- hero banner, screenshots, features, quick start
+- 2026-10-30  docs: Butler is public at github.com/owner-org/butler; how updates reach it
+- 2026-10-30  docs(readme): a Why? section in the owner's words

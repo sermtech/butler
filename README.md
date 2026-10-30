@@ -43,6 +43,20 @@ machine**. The language models are whichever endpoints you choose.
 <img src="docs/img/desktop-light.png" alt="Butler on the desktop, light theme" width="100%">
 </details>
 
+## Why?
+
+Why another personal agent when so many are available?
+
+I wanted a simple solution. Multi-project, not locked into one folder. One
+that could use my local pi with all my pre-made skills, or local opencode, or
+Claude Code, the way I work in front of the computer. I wanted to use local
+models, or any API models already on my harnesses. I wanted to connect it to
+WhatsApp. I wanted a mobile interface. I wanted it simple, highly functional
+and flexible. I wanted to speak to it in real time, with everything running
+locally, at potentially zero cost, built on state-of-the-art components.
+
+That's why. If you share the vision, join in.
+
 ## What it does
 
 - **Hands-free voice.** A wake word, natural turn-taking (it knows when you
