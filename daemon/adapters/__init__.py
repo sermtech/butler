@@ -9,7 +9,7 @@ fake. That is not a testing convenience, it is the proof the seam exists
 (AC-7a). An interface with one implementation is a guess.
 """
 from . import asr_fake, tts_fake, brain_fake      # noqa: F401  (registration)
-from . import asr_transcribecpp, tts_kokoro       # noqa: F401  (registration)
+from . import asr_transcribecpp, tts_kokoro, tts_pocket  # noqa: F401  (registration)
 from . import brain_endpoint, brain_harness       # noqa: F401  (registration)
 from . import harness_fake, harness_pi            # noqa: F401  (registration)
 from . import harness_claude, harness_opencode    # noqa: F401  (registration)

@@ -1,6 +1,6 @@
 # Butler history
 
-This repository was squashed for publication. The private development history had 430 commits, from 2026-08-16 to 2026-10-30, adding 319598 lines and removing 47296 (sum of per-commit insertions and deletions). Roughly 378 distinct acceptance criteria (AC-n identifiers) appear in plan.md. The dates and subjects below are the only part of that history kept; author names and emails are not included.
+This repository was squashed for publication. The private development history had 439 commits, from 2026-08-16 to 2026-10-30, adding 320944 lines and removing 47358 (sum of per-commit insertions and deletions). Roughly 378 distinct acceptance criteria (AC-n identifiers) appear in plan.md. The dates and subjects below are the only part of that history kept; author names and emails are not included.
 
 ## Commits (oldest first)
 
@@ -434,3 +434,12 @@ This repository was squashed for publication. The private development history ha
 - 2026-10-30  docs(backlog): the public push uses the gh login
 - 2026-10-30  docs(readme): phones go through Tailscale or another private network, never port-forwarding
 - 2026-10-30  docs: CONTRIBUTING (join in leads to Discussions); pip-audit clean in SECURITY
+- 2026-10-30  docs(backlog): v0.1.0 released; Discussions and CONTRIBUTING; post-publish check passed
+- 2026-10-30  docs(backlog): Butler updates go through /release-skill
+- 2026-10-30  docs(memory): current state after the public release; fix two paths mangled by a backslash escape
+- 2026-10-30  feat(tts): Pocket TTS adapter, the new default speech engine
+- 2026-10-30  docs(memory): laptop on Pocket TTS in Portuguese; Mac mini Pocket path measured
+- 2026-10-30  feat(tts): Pocket TTS on Apple Silicon; install.py is the update step
+- 2026-10-30  docs(memory): Mac mini on Pocket TTS (English); one update procedure for every machine
+- 2026-10-30  docs(memory): laptop on master via install.py; Mac voice is en_eve
+- 2026-10-30  docs(memory): desk speaking speed set to 1.0 for Pocket TTS

@@ -76,3 +76,6 @@ config/models.json
 # Tauri desktop app (app/): Rust build output and tauri-build generated schemas.
 app/src-tauri/target/
 app/src-tauri/gen/
+
+# Pinned Pocket TTS binary: python -X utf8 scripts/fetch-pocket-tts.py
+vendor/

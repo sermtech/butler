@@ -89,7 +89,7 @@ flowchart LR
   sat <--> d["Butler daemon<br/>(your desk)"]
   d --> asr["Speech in<br/>Parakeet / Nemotron"]
   d --> turn["End of turn<br/>Smart Turn"]
-  d --> tts["Voice out<br/>Kokoro"]
+  d --> tts["Voice out<br/>Pocket TTS / Kokoro"]
   d --> llm["Your language models<br/>(any endpoint)"]
   d --> agents["Coding agents<br/>Claude Code, pi, Codex, opencode"]
   agents --> repo[("Your projects")]

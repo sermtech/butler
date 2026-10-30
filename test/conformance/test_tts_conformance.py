@@ -21,6 +21,8 @@ from daemon import ports  # noqa: E402
 ADAPTERS = [
     pytest.param(("fake", {}), id="fake"),
     pytest.param(("kokoro", {}), id="kokoro", marks=[pytest.mark.slow]),
+    # Needs the pinned binary: python -X utf8 scripts/fetch-pocket-tts.py
+    pytest.param(("pocket", {}), id="pocket", marks=[pytest.mark.slow]),
 ]
 
 # No shared voice constant. It was "af_heart", a KOKORO name, which meant the
@@ -203,7 +205,7 @@ async def test_abort_does_not_kill_an_unrelated_synthesis(tts, voice):
 
 
 @pytest.mark.asyncio
-async def test_synthesize_accepts_a_speaking_speed(tts, voice):
+async def test_synthesize_accepts_a_speaking_speed(tts, voice, request):
     """AC-107. Speed is part of the PORT, so every adapter takes it.
 
     This is all a port property can say. The fake has no speaking rate to
@@ -215,7 +217,15 @@ async def test_synthesize_accepts_a_speaking_speed(tts, voice):
     What this catches is the adapter that never grew the parameter: the hub
     passes `speed=` on every reply, so the failure is a TypeError inside the
     turn, which the room hears as silence.
+
+    Pocket has no rate control and REFUSES any speed but 1.0 rather than
+    speaking at 1.0 (`test/test_tts_pocket.py`); no fixing step is planned
+    while the pinned binary has no speed option.
     """
+    if request.node.callspec.id == "pocket":
+        request.applymarker(pytest.mark.xfail(
+            strict=True, raises=ValueError,
+            reason="Pocket TTS has no speed control; it refuses speed != 1.0"))
     chunks = [c async for c in tts.synthesize(SHORT, voice, speed=0.85)]
     assert chunks, "adapter yielded no audio when it was given a speed"
 

@@ -49,7 +49,8 @@
   StateMask=0); the setting is per process and NOT inherited by children.
 - Every CPU-heavy voice process applies it: `butlerd.main` (STT runs
   in-process), `turn_engine._init_worker` (Smart Turn pool child, on itself),
-  `tts_kokoro._Sidecar.start` (the sidecar), and every kokoro worker via the
+  `tts_kokoro._Sidecar.start` (the sidecar), `tts_pocket._Server._start`
+  (each pocket-tts server), and every kokoro worker via the
   `TTSService.onWorkerSpawn` hook in `_spawnWorker` (first start AND respawn),
   wired in `tts-sidecar.mjs` to `tts-qos.js`, which runs `winqos.py <pid>` with
   the interpreter in `BUTLER_PYTHON` (set by the daemon). Node has no FFI, so

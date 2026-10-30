@@ -211,16 +211,29 @@
   to offer is the daemon's decision (AC-155). Read it via `ports.voice_ids`.
 - Non-English phonemes come from `daemon/engines/tts/tts-phonemes.js`; adding
   a `LANGUAGES` row means listening to it.
+- `tts_pocket` (the default on all three machines, owner 2026-10-30) runs the
+  pinned Rust binary from `pocket_pin.py` (`vendor/pocket-tts/`, installed by
+  `scripts/fetch-pocket-tts.py`); a missing binary is a `PocketError` naming
+  that command, never a fallback to Kokoro. One asset per platform
+  (`pocket_pin.ASSETS`: Windows x64, Apple Silicon); any other machine is refused.
+- Pocket loads one model per LANGUAGE, so a voice id is `<subtag>_<name>`
+  (`pt_rafael`), each language's native voice first; locales are the
+  recognizer catalogue's (`pt-BR`), so a pinned locale finds a voice.
+- Pocket refuses any speed but 1.0 (no rate control); conformance xfails that
+  one case strictly. Abort closes the HTTP response, which stops generation.
+- One `_Server` per language, kept resident (~310 MB each, [MEASURED] English
+  int8 2026-10-30); `HF_HUB_CACHE`
+  is always passed, because cmd.exe has no HOME and the exe would miss its cache.
 
 ### Boot and child lifetime
 
 - Boot calls every engine port's `warm()`: loud on failure, never fatal (D-1).
 - Call `daemon/childproc.assign(proc)` in the SAME function that spawns,
   immediately after (AC-36, D-24). Call sites: `tts_kokoro._Sidecar.start`,
-  `harness_pi._spawn`, `harness_claude._spawn`, `harness_opencode._spawn`. It warns and
+  `tts_pocket._Server._start`, `harness_pi._spawn`, `harness_claude._spawn`, `harness_opencode._spawn`. It warns and
   continues on failure.
 - Keep the other mechanisms; none replaces the job object: `atexit`
-  (`_stop_all_sidecars`), `harness_pi.dispose` (close stdin, then
+  (`_stop_all_sidecars`, `_stop_all_servers`), `harness_pi.dispose` (close stdin, then
   `taskkill /F /T`), `endpointer_smartturn`'s in-child watchdog. Tests that
   start a real child dispose it in a `finally`.
 

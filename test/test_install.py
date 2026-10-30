@@ -159,8 +159,39 @@ def test_install_runs_the_steps_in_order(tmp_path):
     assert rest[2] == ["/bin/npm", "install"]
     assert rest[3] == [py, "-X", "utf8",
                        str(ctx.repo / "scripts" / "fetch-models.py")]
-    assert rest[4][-1].endswith("fetch-fonts.py")
-    assert rest[5][-1].endswith("fetch-xterm.py")
+    assert rest[4] == [py, "-X", "utf8",
+                       str(ctx.repo / "scripts" / "fetch-pocket-tts.py")]
+    assert rest[5][-1].endswith("fetch-fonts.py")
+    assert rest[6][-1].endswith("fetch-xterm.py")
+
+
+def test_the_pocket_binary_is_an_expected_file(tmp_path):
+    """--check reports a missing Pocket TTS binary like a missing model."""
+    names = [p.as_posix() for p in inst.expected_files(tmp_path, False)]
+    assert any("/vendor/pocket-tts/pocket-tts" in n for n in names)
+
+
+def test_npm_on_posix_makes_node_ptys_spawn_helper_executable(tmp_path,
+                                                            monkeypatch):
+    """npm 11 skips node-pty's install script, so nothing marks spawn-helper
+    executable and every in-page terminal fails on the Mac (docs/macos.md).
+    The chmod is recorded rather than read back: Windows has no exec bit."""
+    ctx = make_ctx(tmp_path, os_name="posix")
+    helper = (ctx.repo / "node_modules" / "node-pty" / "prebuilds"
+              / "darwin-arm64" / "spawn-helper")
+    helper.parent.mkdir(parents=True)
+    helper.write_bytes(b"")
+    modes = {}
+    monkeypatch.setattr(inst.os, "chmod", lambda path, mode: modes.update(
+        {Path(path): mode}))
+    assert inst.npm_step(ctx).status == "ok"
+    assert modes.get(helper, 0) & 0o111 == 0o111
+
+
+def test_npm_on_windows_chmods_nothing(tmp_path, monkeypatch):
+    ctx = make_ctx(tmp_path, os_name="nt")
+    monkeypatch.setattr(inst.os, "chmod", lambda *a: pytest.fail("chmod"))
+    assert inst.npm_step(ctx).status == "ok"
 
 
 def test_nemotron_flag_reaches_fetch_models(tmp_path):

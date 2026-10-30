@@ -6,7 +6,8 @@ results are in section 4.
 ## 1. What differs from Windows
 
 The daemon, the page, speech recognition (transcribe-cpp, CPU), end of turn
-(onnxruntime, CPU) and speech (Kokoro on node, CPU) are the same code. The
+(onnxruntime, CPU) and speech (Pocket TTS, kyutai's pinned Rust binary; its
+Apple Silicon build is `pocket_pin.ASSETS`) are the same code. The
 microphone and speaker are the BROWSER's, so nothing audio-specific changed.
 
 | Seam | Windows | macOS |
@@ -36,8 +37,8 @@ Not available on macOS, by decision rather than oversight:
 - In-page terminals (`docs/chats-and-terminals.md`): npm 11 SKIPS node-pty's
   install scripts ("install-scripts" approval), so its post-install never marks
   `node_modules/node-pty/prebuilds/darwin-*/spawn-helper` executable and every
-  shell fails to start. After each `npm install` on the Mac: `chmod +x` that
-  file (done 2026-10-29). Windows is unaffected.
+  shell fails to start. `scripts/install.py`'s node step `chmod`s it after
+  every `npm install` off Windows (2026-10-30). Windows is unaffected.
 - Supervision: launchd runs `launch.py` ONCE at login and that exits, so a
   daemon that dies later stays down until `launchctl kickstart -k
   gui/$(id -u)/com.butler.daemon` (open in `docs/backlog.md`).
@@ -72,6 +73,18 @@ laptop: a push from the desk into a checkout with
 
 Persona: `SOUL.md` and `USER.md` are created from template at first boot. They
 describe Ana, never the owner: never copy the desk's.
+
+## 2a. Updating (the same on every machine)
+
+From the desk: `git push mac master`. Then on the Mac, in the repo (an SSH
+shell lacks `~/.local/bin` and `/opt/homebrew/bin`, so put them on PATH):
+
+    PATH=$HOME/.local/bin:/opt/homebrew/bin:$PATH .venv/bin/python -X utf8 scripts/install.py
+    launchctl kickstart -k gui/$(id -u)/com.butler.daemon
+
+`install.py` is idempotent: Python and node packages, models, the Pocket TTS
+binary and weights, fonts. A new Pocket pin therefore reaches the Mac by the
+same push. Prove the restart with a new daemon PID, never the launch exit code.
 
 ## 3. Verification
 

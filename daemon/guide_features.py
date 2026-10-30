@@ -250,7 +250,8 @@ FEATURES: tuple[Feature, ...] = (
             "\"over to you\", \"pause mode\" for Pause, \"smart turn\" "
             "for Smart. Settings: Ambient context keeps a few seconds before "
             "the wake word; Language, Automatic answers in the language "
-            "spoken; Speech sets voice and speed."),
+            "spoken; Speech sets voice and speed. The Pocket TTS voice "
+            "engine has no speed control and needs speed 1.0."),
         groups=("listen", "stt", "turn", "tts"),
         say=(("spoken_mode_request", "long form"),
              ("spoken_mode_request", "pause mode"),

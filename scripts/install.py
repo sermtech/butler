@@ -8,8 +8,13 @@ prints one line `[step] ok|done|SKIP|FAILED reason`; the first FAILED stops the
 run with exit 1 (fail fast, no fallbacks). It never installs uv, node or npm:
 it names the fix and stops.
 
-Steps: prereqs, venv, python packages, node packages, models, fonts and the
+Steps: prereqs, venv, python packages, node packages, models, Pocket TTS
+(the default speech engine, scripts/fetch-pocket-tts.py), fonts and the
 terminal view, data root, persisting BUTLER_DATA.
+
+It is also the UPDATE step on every machine: after `git push <machine>
+master`, run it there and restart Butler; each step is a no-op when nothing
+changed.
 
 BUTLER_DATA is NEVER overwritten: it points at someone's records. An unset
 value is saved with `setx` on Windows; on macOS and Linux no profile file is
@@ -154,6 +159,16 @@ def _load(name: str, filename: str):
     return module
 
 
+def _load_pin():
+    """daemon/adapters/pocket_pin.py by file (the package would load every
+    adapter, and this script runs before the venv exists)."""
+    path = REPO / "daemon" / "adapters" / "pocket_pin.py"
+    spec = importlib.util.spec_from_file_location("pocket_pin", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def expected_files(repo: Path, nemotron: bool) -> list[Path]:
     """Every file the three fetch scripts leave behind, read off THEIR tables."""
     models = _load("fetch_models", "fetch-models.py")
@@ -161,6 +176,9 @@ def expected_files(repo: Path, nemotron: bool) -> list[Path]:
     xterm = _load("fetch_xterm", "fetch-xterm.py")
     found = [repo / i.dest for i in models.ITEMS
              if nemotron or not i.optional]
+    pocket = _load_pin()
+    found.append(repo / pocket.INSTALL_DIR.relative_to(pocket.REPO)
+                 / pocket.EXE_NAME)
     # fetch-fonts.py spells its destination inline in main(): web/fonts.
     found += [repo / "web" / "fonts" / f.name for f in fonts.FONTS]
     out = xterm.OUT.relative_to(xterm.REPO)
@@ -281,7 +299,16 @@ def pip_step(ctx: Context) -> Result:
 
 def npm_step(ctx: Context) -> Result:
     failed = _sh(ctx, [ctx.which("npm"), "install"])
-    return failed or Result("ok", "node packages installed")
+    if failed:
+        return failed
+    if ctx.os_name != "nt":
+        # npm 11 skips node-pty's install script, so nothing marks its
+        # spawn-helper executable and every in-page terminal fails to start
+        # (docs/macos.md section 1).
+        for helper in (ctx.repo / "node_modules" / "node-pty" / "prebuilds"
+                       ).glob("*/spawn-helper"):
+            os.chmod(helper, 0o755)
+    return Result("ok", "node packages installed")
 
 
 def _script(ctx: Context, name: str, *extra: str) -> list[str]:
@@ -293,6 +320,11 @@ def models_step(ctx: Context) -> Result:
     extra = ["--nemotron"] if ctx.nemotron else []
     failed = _sh(ctx, _script(ctx, "fetch-models.py", *extra))
     return failed or Result("ok", "models present and verified")
+
+
+def pocket_step(ctx: Context) -> Result:
+    failed = _sh(ctx, _script(ctx, "fetch-pocket-tts.py"))
+    return failed or Result("ok", "Pocket TTS binary and weights present")
 
 
 def assets_step(ctx: Context) -> Result:
@@ -348,6 +380,7 @@ def install_steps(ctx: Context):
             ("python packages", lambda: pip_step(ctx)),
             ("node packages", lambda: npm_step(ctx)),
             ("models", lambda: models_step(ctx)),
+            ("pocket tts", lambda: pocket_step(ctx)),
             ("fonts and terminal view", lambda: assets_step(ctx)),
             ("data root", lambda: data_step(ctx)),
             ("persist BUTLER_DATA", lambda: persist_step(ctx)),
